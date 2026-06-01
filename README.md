@@ -37,16 +37,16 @@ Unblind 是给 AI Agent 用的视觉后端——不是面向人类的 App，而�
 
 ```bash
 # 推荐：让 Claude Code 自己装
-"帮我安装 unblind skill，GitHub 仓库 Santazuki/unblind，clone 后运行 install.sh"
+"帮我安装 unblind skill，npm 包 @santaz-io/unblind，装好 run install.js"
 
 # 或手动
-git clone https://github.com/Santazuki/unblind.git /tmp/unblind
-bash /tmp/unblind/install.sh
+npm install -g @santaz-io/unblind
+node ~/.claude/skills/unblind/scripts/install.js
 ```
 
-> `install.sh` 只复制核心文件（scripts/、SKILL.md、README.md），不会带入 tests/docs。
+> npm 包仅 26 文件 80KB（tests/docs 不入包），`install.js` 再复制核心到 skill 目录。
 >
-> 也可用 `npx skills add Santazuki/unblind`，但当前会 git clone 全量仓库。
+> 也可 `git clone` + `install.sh`，同样只装核心。
 
 首次运行自动检测缺失配置并修复，无需手动编辑 settings.json。
 
@@ -171,14 +171,13 @@ Unlike most vision skills, it's engineered with defense at every layer: Phase 0 
 
 ```bash
 # Tell Claude Code:
-"Install unblind skill from Santazuki/unblind — clone to /tmp, run install.sh"
+"Install unblind skill — npm install @santaz-io/unblind, then run install.js"
 
 # Or manual:
-git clone https://github.com/Santazuki/unblind.git /tmp/unblind
-bash /tmp/unblind/install.sh
+npm install -g @santaz-io/unblind
 ```
 
-> `install.sh` copies only core files. `npx skills add` currently clones the full repo.
+> 26 files, 80KB. `install.js` deploys core to skill directory. `git clone` also works.
 
 **Developer:**
 
