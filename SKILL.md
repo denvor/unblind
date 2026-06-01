@@ -1,19 +1,13 @@
 ---
 name: unblind
 description: >
-  可靠的视觉分析 skill。自愈配置、熔断重试、SHA256 缓存。
-  支持通用描述、OCR 文字提取、UI 设计评审、图表数据提取、物体检测、多图对比六种模式。
-  触发: 用户发送任何图片（内联图片、截图、[Image: 标记]）、任何图片文件路径、
-  "分析这张图"、"这是什么"、"截图"、"看看这个"、"这张图"、"这个图片"、
-  "提取文字"、"OCR"、"识别文字"、"看图"、"评审界面"、"图表数据"、
-  "仿照这种格式"、"参考这个"、"看看这个设计"。
-  Triggers: user sends any image, inline image, screenshot, [Image:],
-  any image file path, "analyze this", "what's in this picture",
-  "read this screenshot", "extract text from", "describe this",
-  "look at this", "check this image", "review this UI".
-  NOT: 视频分析、音频处理、PDF 文档、纯文本对话、"生成图片"、"画一张"。
+  Routes images to Mimo/OpenAI vision API for text-only models. Use this
+  skill when the user sends an image, asks "what's in this picture", says
+  "analyze this screenshot", requests "OCR" or "extract text", reviews UI
+  designs, reads charts, or uses Chinese triggers like 识别图片/看图.
+  Self-healing setup on first run. Does NOT handle video, audio, or PDFs.
 metadata:
-  version: "3.0"
+  version: "2.2"
   category: ai-vision
   bundled_tools:
     - scripts/unblind.mjs
@@ -22,29 +16,14 @@ metadata:
     - Mimo or OpenAI API key (auto-prompted on first run)
 compatibility: Claude Code (bundled script, zero npm deps)
 allowed-tools: Bash(node ~/.claude/skills/unblind/scripts/unblind.mjs:*)
-model: inherit
-context: fork
-argument-hint: [image-path] [mode]
 ---
 
-<!-- L1: Metadata (~160 tokens) | L2: Instructions below (~700 tokens) -->
+<!-- LEVEL 1: Metadata above (~180 tokens, always loaded) -->
+<!-- LEVEL 2: Instructions below (~700 tokens, loaded on trigger) -->
 
 # Unblind
 
-## 概述
-
-可靠的视觉分析 skill。自愈配置、熔断重试、SHA256 持久化缓存。7 个 Provider 通过协议驱动架构调度。不为内置视觉模型的模型触发（Claude 等可直接看图）。
-
-## 触发条件
-
-| 触发 | 不触发 |
-|------|--------|
-| 用户直接发送图片（内联图片、截图、`[Image:]`） | 视频文件 |
-| 图片文件路径 (`.png/.jpg/.gif/.webp/.bmp/.svg`) | 音频文件 |
-| "分析这张图"、"这是什么"、"看看这个"、"看图" | PDF 文档 |
-| "OCR"、"提取文字"、"识别文字" | 纯文本对话（不含图片） |
-| "评审界面"、"UI"、"设计"、"仿照这种格式" | "生成图片"、"画一张" |
-| "图表"、"数据"、"趋势"、"参考这个" | — |
+Route images to vision API. Never pretend to see. Never Read/Edit settings.json.
 
 ## Iron Rules
 
@@ -54,24 +33,19 @@ argument-hint: [image-path] [mode]
 4. Never preamble. Never hallucinate. Always invoke bundled script.
 5. Tool reads API key from env automatically
 
-| 你可能在想 | 事实 |
-|-----------|------|
-| "配置应该没问题，跳过检查吧" | 配置会在你不注意时失效——Phase 0 每次都要跑 |
-| "我可以直接 Read settings.json 看看" | Read 会把 Key 写进对话记录——绝对禁止 |
-| "先描述一下这张图再调工具" | 你做不到——直接调工具 |
+## Quick Start
 
-## 错误处理
+User sends image → Unblind routes to Mimo/OpenAI → returns text.
+Example: "What's in this screenshot?" → OCR mode extracts all text.
+Example: "Review this UI design" → ui-review mode critiques layout/UX.
 
-| 错误 | 原因 | 处理 |
-|------|------|------|
-| `KEY_MISSING` | 未配置 API Key | Phase 0.2 引导用户设置 |
-| `MODEL_MISSING` | 模型名无效 | Phase 0.5 引导选择 |
-| `PERM_MISSING` | 缺少 Bash 权限 | Phase 0.4 自动添加 |
-| API Key 无效 (401) | Key 过期 | 提示重新获取 |
-| 文件不存在 | 路径错误 | 提示检查路径 |
-| 格式不支持 | 非白名单扩展名 | 提示支持格式列表 |
-| 文件过大 | >50MB | 提示压缩或调整上限 |
-| 所有 Provider 失败 | 网络/服务故障 | 提示稍后重试 |
+## Edge Cases
+
+- API key expired/missing → Phase 0.2 prompts user to set it
+- Image >50MB → rejected with size limit + compression suggestion
+- Unsupported format → rejected with list of 7 supported formats
+- Both providers fail → automatic Mimo→OpenAI fallback, clean error if both down
+- Malicious path input → metacharacter gate rejects before execution
 
 ## Phase 0: Self-Healing
 
@@ -84,34 +58,56 @@ node -e "const fs=require('fs');const os=require('os');const p=require('path').j
 - Empty → healthy, **skip to Phase 1**
 - `KEY_MISSING` → 0.2 | `MODEL_MISSING` → 0.5 | `PERM_MISSING` → 0.4
 
-### 0.2-0.8 Repair procedures
+### 0.2 Version check
 
-See `resources/troubleshooting.md`. Key rules: API key set by user in own terminal. Model switch via `--set-model`. Version: `git fetch` → notify.
+```bash
+cd ~/.claude/skills/unblind && git fetch 2>/dev/null && behind=$(git rev-list HEAD..origin/master --count 2>/dev/null) && [ "$behind" -gt 0 ] && echo "NEEDS_UPDATE $behind"
+```
+
+- Empty → up to date, **skip to Phase 1**
+- `NEEDS_UPDATE <N>` → unblind 落后 origin/master **N 个 commit**。告诉用户：
+
+```
+🐌 你的 unblind 已经落后 N 个版本了，像一个还在用 Windows XP 的老人家...
+   git -C ~/.claude/skills/unblind pull
+   跑一下就能追上时代，我等你。
+```
+
+- 提示完继续执行 Phase 1（不阻塞——旧版本也能用，只是提醒）
+
+### 0.3-0.8 Repair procedures
+
+See `resources/troubleshooting.md` for: API key setup, base URL repair, permission fix, model selection, Node.js check.
+
+Key rules:
+- API key: user runs command in own terminal. Never write it yourself.
+- Model switch: user says "切换模型" → show prompt, write via Bash, confirm.
 
 ### 0.9 All healthy → Phase 1
 
 ## Phase 1-4: Analyze
 
 1. **Detect** image path from `[Image: source: <path>]`. Must be absolute, supported ext, no shell metacharacters.
-2. **Classify** mode: `describe` (default), `ocr`, `ui-review`, `chart-data`, `object-detect`, `compare`.
+2. **Classify** mode: `describe` (default), `ocr`, `ui-review`, `chart-data`, `object-detect`.
 3. **Execute**: `node ~/.claude/skills/unblind/scripts/unblind.mjs '<path>' <mode>` — no preamble.
 4. **Report**: print stdout. API key error → back to 0.2.
 
-## CLI Reference
+## CLI Quick Reference
 
 ```
-node scripts/unblind.mjs <image> <mode>    分析图片
-node scripts/unblind.mjs <a> <b> compare   多图对比
-node scripts/unblind.mjs <img> --format json  结构化输出
-node scripts/unblind.mjs --health --config --set-model
-node scripts/unblind.mjs --no-cache --cache-stats
+node scripts/unblind.mjs <image> <mode>  分析图片
+node scripts/unblind.mjs --health        健康检查
+node scripts/unblind.mjs --config        查看配置（Key已脱敏）
+node scripts/unblind.mjs --set-model <m> 切换模型 (mimo-v2.5 / mimo-v2-omni)
+node scripts/unblind.mjs --no-cache      跳过缓存
+node scripts/unblind.mjs --cache-stats   缓存统计
 ```
 
-<!-- L3: Resources (on-demand) -->
+<!-- LEVEL 3: Resources (on-demand, see files below) -->
 
 ## Resources
 
 - `resources/troubleshooting.md` — Phase 0 repair commands, common errors, Node.js setup
-- `resources/best_practices.md` — Model selection, token optimization, debugging
-- `templates/output_formats/` — JSON/YAML/CSV output templates
-- `README.md` — Install guide, security verification
+- `resources/best_practices.md` — Model selection guide, token optimization, debugging
+- `templates/output_formats/` — JSON/YAML/CSV output templates (Phase 3+)
+- `README.md` — Install guide, security verification, GPT audit rebuttal
