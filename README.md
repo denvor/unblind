@@ -33,15 +33,20 @@ Unblind 是给 AI Agent 用的视觉后端——不是面向人类的 App，而�
 
 ## 🚀 快速开始
 
-**用户安装**（二选一）：
+**用户安装**：
 
 ```bash
-# 让 Claude Code 自己装
-"帮我安装 unblind skill，用 npx skills add Santazuki/unblind"
+# 推荐：让 Claude Code 自己装
+"帮我安装 unblind skill，GitHub 仓库 Santazuki/unblind，clone 后运行 install.sh"
 
 # 或手动
-npx skills add Santazuki/unblind --skill unblind
+git clone https://github.com/Santazuki/unblind.git /tmp/unblind
+bash /tmp/unblind/install.sh
 ```
+
+> `install.sh` 只复制核心文件（scripts/、SKILL.md、README.md），不会带入 tests/docs。
+>
+> 也可用 `npx skills add Santazuki/unblind`，但当前会 git clone 全量仓库。
 
 首次运行自动检测缺失配置并修复，无需手动编辑 settings.json。
 
@@ -166,11 +171,14 @@ Unlike most vision skills, it's engineered with defense at every layer: Phase 0 
 
 ```bash
 # Tell Claude Code:
-"Install unblind with: npx skills add Santazuki/unblind"
+"Install unblind skill from Santazuki/unblind — clone to /tmp, run install.sh"
 
 # Or manual:
-npx skills add Santazuki/unblind --skill unblind
+git clone https://github.com/Santazuki/unblind.git /tmp/unblind
+bash /tmp/unblind/install.sh
 ```
+
+> `install.sh` copies only core files. `npx skills add` currently clones the full repo.
 
 **Developer:**
 
