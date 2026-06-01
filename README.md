@@ -27,7 +27,9 @@ Unblind 是给 AI Agent 用的视觉后端——不是面向人类的 App，而�
 和大多数视觉 skill 不同的是，它不是一层薄薄的 API 封装。每一步都有防御：
 
 ```
-用户发图 → Phase 0 自检（静默）→ 魔数校验 → 缓存查询 → 7 Provider 链轮换 → 返回描述
+用户发图 → Phase 0 自检（静默）→ 魔数校验 → 缓存查询 → Provider（按需配置）→ 返回描述
+                                      ↑
+                                 配几个用几个，第一个失败自动切下一个
 ```
 
 ## 🚀 快速开始
@@ -72,7 +74,7 @@ bash /tmp/unblind/install.sh
 
 ## 🎯 视觉模型
 
-预置 7 个 Provider，新增只需在注册表数组中加一行纯数据：
+预置 7 个 Provider 入口（配几个 Key 用几个），新增只需加一行数据：
 
 | Provider | 协议族 | 默认模型 |
 |----------|--------|------|
@@ -173,7 +175,7 @@ Send this to Claude Code:
 ### 🧪 By the Numbers
 
 - **171 tests**, 169 pass, 0 fail — GitHub Actions
-- **7 providers**, 3 protocol families, 6 analysis modes
+- **7 pre-registered providers** (use what you configure), 3 protocol families, 6 analysis modes
 - **15 modules**, zero npm dependencies
 - **3-round security audit**, 18 security tests, all CLEAN
 
