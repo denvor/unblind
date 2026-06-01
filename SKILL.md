@@ -7,7 +7,7 @@ description: >
   designs, reads charts, or uses Chinese triggers like 识别图片/看图.
   Self-healing setup on first run. Does NOT handle video, audio, or PDFs.
 metadata:
-  version: "2.2"
+  version: "3.0"
   category: ai-vision
   bundled_tools:
     - scripts/unblind.mjs
