@@ -27,6 +27,7 @@ Modes:
 Options:
   --no-cache   跳过缓存，强制执行 API 调用
   --format <json|yaml|csv>  指定输出格式（追加格式指令到 prompt）
+  --prompt <text>  自定义分析提示词（覆盖 mode 预设 prompt）
 
 Available models:
   mimo-v2.5    100/200 credits（默认，推荐）
@@ -95,6 +96,14 @@ async function main() {
     process.exit(0);
   }
 
+  // 提取 --prompt <value>
+  const promptIdx = args.indexOf("--prompt");
+  const customPrompt = promptIdx >= 0 ? (args[promptIdx + 1] || "") : "";
+  if (promptIdx >= 0 && !customPrompt) {
+    console.error("--prompt 需要指定提示词文本");
+    process.exit(1);
+  }
+
   // 提取 --format <value>，防止 value 泄漏到位置参数
   const formatIdx = args.indexOf("--format");
   const format = formatIdx >= 0 ? (args[formatIdx + 1] || "").toLowerCase() : "";
@@ -104,11 +113,12 @@ async function main() {
   }
 
   // 过滤 flags 和 flag 值，剩余为位置参数
-  const flagSet = new Set(["--health", "--config", "--no-cache", "--cache-stats", "--clear-cache", "--set-model", "--format"]);
+  const flagSet = new Set(["--health", "--config", "--no-cache", "--cache-stats", "--clear-cache", "--set-model", "--format", "--prompt"]);
   const positional = args.filter((a, i) => {
     if (flagSet.has(a)) return false;
     if (i > 0 && args[i - 1] === "--format") return false;
     if (i > 0 && args[i - 1] === "--set-model") return false;
+    if (i > 0 && args[i - 1] === "--prompt") return false;
     return true;
   });
   const flags = args.filter(a => a.startsWith("--"));
@@ -132,7 +142,7 @@ async function main() {
   const skipCache = flags.includes("--no-cache");
 
   try {
-    const result = await analyze(imagePaths, mode, { skipCache, format });
+    const result = await analyze(imagePaths, mode, { skipCache, format, customPrompt });
     console.log(result);
   } catch (err) {
     console.error(formatError(err));

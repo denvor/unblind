@@ -119,8 +119,9 @@ export async function analyze(imagePaths, mode = "describe", options = {}) {
     paths.map(p => processImage(p, { maxImageSize: config.maxImageSize }))
   );
 
-  const cachePrompt = MODE_PROMPTS[mode];  // 缓存键不含格式指令，跨格式共享
-  const apiPrompt = cachePrompt + (options.format ? (FORMAT_PROMPTS[options.format] || "") : "");
+  // --prompt 自定义提示词优先，覆盖 mode 预设和格式指令
+  const cachePrompt = options.customPrompt || MODE_PROMPTS[mode];
+  const apiPrompt = options.customPrompt || (cachePrompt + (options.format ? (FORMAT_PROMPTS[options.format] || "") : ""));
 
   // Multi-image cache key: hash all base64 concatenated (backward-compatible for single image)
   const combinedBase64 = images.map(i => i.base64).join("::");

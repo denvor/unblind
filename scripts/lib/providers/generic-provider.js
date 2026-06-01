@@ -151,7 +151,7 @@ export class GenericProvider {
       const result = await this.execute({
         inputs: [{ type: "image", data: miniPng, mimeType: "image/png" }],
         prompt: "say OK",
-        options: { maxTokens: 50 },
+        options: { maxTokens: 500 },
       });
       return result.content.length > 0;
     } catch {
