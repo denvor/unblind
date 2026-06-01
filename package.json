@@ -11,5 +11,14 @@
   },
   "keywords": ["agent-skills", "claude-code", "skill", "vision", "deepseek", "mimo", "openai", "self-healing"],
   "license": "MIT",
-  "private": true
+  "private": true,
+  "files": [
+    "SKILL.md",
+    "README.md",
+    "scripts/unblind.mjs",
+    "scripts/lib/",
+    "scripts/install.js",
+    "resources/",
+    "templates/"
+  ]
 }

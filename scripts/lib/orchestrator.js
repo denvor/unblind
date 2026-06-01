@@ -19,7 +19,7 @@ const FORMAT_PROMPTS = {
 function buildProviderChain(config) {
   const mimoKey = getApiKey();
   const baseUrls = {
-    mimo: mimoKey ? getBaseUrl(mimoKey) : "",
+    mimo: config.baseUrl || (mimoKey ? getBaseUrl(mimoKey) : ""),
   };
   const model = process.env.OPENAI_VISION_MODEL || config.model;
 
