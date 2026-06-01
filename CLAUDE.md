@@ -6,7 +6,7 @@
 
 ## 当前状态
 
-Phase 1+2+3+5 完成。v3.0 协议驱动架构。15 模块，161 tests（159 pass, 0 fail, 2 API-skip）。Provider 注册表 7 条目（Mimo/OpenAI/Ollama/Gemini/Groq/Together/Fireworks），3 协议族（Anthropic Messages / OpenAI Chat Completions / Google Generative AI）。
+Phase 1+2+3+5 完成。v3.0 协议驱动架构。15 模块，171 tests（169 pass, 0 fail, 2 API-skip）。Provider 注册表 7 条目（Mimo/OpenAI/Ollama/Gemini/Groq/Together/Fireworks），3 协议族（Anthropic Messages / OpenAI Chat Completions / Google Generative AI）。
 
 > 注意：`docs/project-prepare-md/` 中的设计文档使用 `src/` + TypeScript，代表**原始蓝图**。实际采用 `scripts/lib/` + JavaScript + `env.*` 配置格式。差异是有意为之（零编译、Claude Code 原生 env 注入），历史设计文档未更新。
 
@@ -14,10 +14,10 @@ Phase 1+2+3+5 完成。v3.0 协议驱动架构。15 模块，161 tests（159 pas
 
 ```
 scripts/
-├── unblind.mjs              # CLI 入口: analyze / --health / --config / --set-model / --cache-stats
+├── unblind.mjs              # CLI 入口: analyze / --health / --config / --set-model / --cache-stats / --prompt / --format
 ├── install.js               # Node.js 安装脚本（--check 诊断模式）
 └── lib/
-    ├── orchestrator.js      # 调度核心：config → image → cache → provider → result
+    ├── orchestrator.js      # 调度核心：config → image → cache → provider → result。emoji过程反馈+中英双语
     ├── httpClient.js        # 统一 HTTP 层：fetch + 超时 + 错误分类 + parseError 委托
     ├── config.js            # 读取 settings.json，校验，默认值，saveConfig()
     ├── credentialManager.js # API Key + Base URL 自动检测（sk-ant/sk-/tp- 前缀）
