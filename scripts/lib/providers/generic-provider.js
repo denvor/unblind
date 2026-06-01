@@ -143,6 +143,14 @@ export class GenericProvider {
 
   /**
    * 快速连通性检查
+   *
+   * 使用 1x1 像素 PNG + "say OK" 验证 API 连通性。
+   * maxTokens 设为 500 —— thinking 模型（如 mimo-v2.5）的 thinking block 可能消耗
+   * 大量 token，50 不够用会导致 extractContent 找不到 text block 而误报失败。
+   *
+   * thinking 设为 disabled —— health check 不需要推理能力（输入是纯色图片），
+   * 关闭 thinking 既省 token 又防止未来模型 thinking block 膨胀导致复发。
+   *
    * @returns {Promise<boolean>}
    */
   async healthCheck() {
@@ -151,7 +159,7 @@ export class GenericProvider {
       const result = await this.execute({
         inputs: [{ type: "image", data: miniPng, mimeType: "image/png" }],
         prompt: "say OK",
-        options: { maxTokens: 50 },
+        options: { maxTokens: 500, thinking: { type: "disabled" } },
       });
       return result.content.length > 0;
     } catch {

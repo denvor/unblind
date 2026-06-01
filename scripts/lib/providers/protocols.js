@@ -84,6 +84,7 @@ export const PROTOCOLS = {
         messages: [{ role: "user", content }],
       };
       if (options.temperature != null) body.temperature = options.temperature;
+      if (options.thinking != null) body.thinking = options.thinking;
       return body;
     },
 
