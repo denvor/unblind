@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // Unblind — Node.js 安装脚本
-// 将仓库内容部署到 Claude Code 技能目录
+// 将核心文件部署到 Claude Code 技能目录（~/.claude/skills/unblind/）。
+// 只复制 FILES_TO_COPY + DIRS_TO_COPY 白名单内容，tests/docs/dev 不入部署。
+// npm 用户：npm install -g @santaz-io/unblind 后运行本脚本即可部署（26 文件 80KB）。
 
 import { cpSync, existsSync, mkdirSync, readFileSync } from "fs";
 import { join, dirname } from "path";

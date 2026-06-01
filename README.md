@@ -44,9 +44,9 @@ git clone https://github.com/Santazuki/unblind.git /tmp/unblind
 bash /tmp/unblind/install.sh
 ```
 
-> `install.sh` 只复制核心文件（scripts/、SKILL.md、README.md），不会带入 tests/docs。
+> `install.sh` 只复制核心文件（scripts/、SKILL.md、README.md），不保留 tests/docs。
 >
-> 也可用 `npx skills add Santazuki/unblind`，但当前会 git clone 全量仓库。
+> **npm 轻量安装**：`npm install -g @santaz-io/unblind`（26 文件 80KB），然后运行 `install.js` 部署到 skill 目录。
 
 首次运行自动检测缺失配置并修复，无需手动编辑 settings.json。
 
@@ -178,7 +178,7 @@ git clone https://github.com/Santazuki/unblind.git /tmp/unblind
 bash /tmp/unblind/install.sh
 ```
 
-> `install.sh` copies only core files. `npx skills add` currently clones the full repo.
+> `install.sh` copies only core files. **npm**: `npm i -g @santaz-io/unblind` → `install.js` (26 files, 80KB).
 
 **Developer:**
 
