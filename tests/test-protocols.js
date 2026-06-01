@@ -121,8 +121,23 @@ describe("PROTOCOLS: openai-chat-completions", () => {
     assert.equal(r.category, "client");
     assert.equal(r.message, "Bad request");
   });
+
+
+describe("anthropic buildBody — thinking option", () => {
+  const proto = PROTOCOLS["anthropic-messages"];
+
+  it("should pass through thinking option", () => {
+    const body = proto.buildBody("claude-sonnet", [], { thinking: { type: "disabled" } });
+    assert.deepStrictEqual(body.thinking, { type: "disabled" });
+  });
+
+  it("should NOT include thinking when not set", () => {
+    const body = proto.buildBody("claude-sonnet", [], {});
+    assert.strictEqual(body.thinking, undefined);
+  });
 });
 
+});
 describe("PROTOCOLS: anthropic-messages", () => {
   const proto = PROTOCOLS["anthropic-messages"];
 
@@ -255,4 +270,26 @@ describe("PROTOCOLS: google-generative-ai", () => {
     assert.deepStrictEqual(proto.parseError({ error: { message: "Invalid API key" } }, 401), { category: "auth" });
     assert.deepStrictEqual(proto.parseError({ error: { message: "Quota exceeded" } }, 429), { category: "rate_limit" });
   });
+
+
+describe("commonParseError", () => {
+  it("should return auth for 401", () => {
+    const result = PROTOCOLS["anthropic-messages"].parseError({}, 401);
+    assert.strictEqual(result.category, "auth");
+  });
+  it("should return rate_limit for 429", () => {
+    const result = PROTOCOLS["openai-chat-completions"].parseError({ error: { message: "too fast" } }, 429);
+    assert.strictEqual(result.category, "rate_limit");
+  });
+  it("should return server for 503", () => {
+    const result = PROTOCOLS["google-generative-ai"].parseError({}, 503);
+    assert.strictEqual(result.category, "server");
+  });
+  it("should return client with message for 400", () => {
+    const r = PROTOCOLS["openai-chat-completions"].parseError({ error: { message: "bad" } }, 400);
+    assert.strictEqual(r.category, "client");
+    assert.strictEqual(r.message, "bad");
+  });
+});
+
 });
