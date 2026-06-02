@@ -32,4 +32,9 @@ tests/sample_images/*
 *.swp
 *.swo
 *~
-docs/design/resume-descriptions.md
+
+# 本地开发文档（GitHub 不暴露）
+CLAUDE.md
+docs/design/
+docs/project-prepare-md/
+docs/superpowers/
