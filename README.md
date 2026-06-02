@@ -107,16 +107,18 @@ unblind.mjs --clear-cache            # 清空缓存
 
 ## 🏗️ 架构
 
-v3.0 协议驱动架构——3 协议族，GenericProvider 唯一调度类，纯数据注册表。
+协议驱动——把 LLM API 的 Provider 层拆成两个独立维度：**协议**（怎么发请求）+ **Provider**（连到哪）。复杂度从 N×M 降到 N+M。
 
 ```
 CLI → orchestrator (config → image → cache → provider → result)
-        → providers/ (GenericProvider → protocols 协议函数调度)
+        → providers/ (GenericProvider — 唯一类 → protocols 纯函数调度)
         → httpClient (fetch + 超时 + parseError 委托)
         → cache (SHA256 + TTL + LRU)
         → retry (指数退避 + CircuitBreaker)
         → errorHandler (ClientError / ServerError / NetworkError)
 ```
+
+3 个协议对象（Anthropic Messages / OpenAI Chat / Google Gen AI）+ 7 行注册表数据 = 全部 Provider。新增厂商加一行，新增协议加一个对象，互不影响。
 
 详见 [架构设计](display/2026-05-30-provider-v3-protocol-driven-design.md) · [Provider 优化](display/provider-optimization.md)。
 
