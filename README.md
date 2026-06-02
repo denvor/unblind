@@ -33,28 +33,24 @@ Unblind 是给 AI Agent 用的视觉后端——不是面向人类的 App，而�
 
 ## 🚀 快速开始
 
-**用户安装**：
-
 ```bash
-# 推荐：让 Claude Code 自己装
-"帮我安装 unblind skill，GitHub 仓库 Santazuki/unblind，clone 后运行 install.sh"
+# AI 安装
+"帮我安装 unblind skill，npx skills add Santazuki/unblind，然后运行 install.sh"
 
-# 或手动
-git clone https://github.com/Santazuki/unblind.git /tmp/unblind
-bash /tmp/unblind/install.sh
+# 手动安装
+npm install -g @santaz-io/unblind
+unblind-install           # install.js 部署到 ~/.claude/skills/
 ```
 
-> `install.sh` 只复制核心文件（scripts/、SKILL.md、README.md），不保留 tests/docs。
->
-> **npm 轻量安装**：`npm install -g @santaz-io/unblind`（26 文件 80KB），然后运行 `install.js` 部署到 skill 目录。
+> npm 包 26 文件 80KB，`install.js` 只部署核心（scripts/、SKILL.md、README.md）。
 
-首次运行自动检测缺失配置并修复，无需手动编辑 settings.json。
+首次运行自动检测缺失配置并修复。
 
 **开发者**：
 
 ```bash
 git clone https://github.com/Santazuki/unblind.git && cd unblind
-node --test tests/test-*.js   # 验证环境，零依赖
+node --test tests/test-*.js   # 零依赖
 ```
 
 ## ⚙️ 工程特性
@@ -122,7 +118,7 @@ CLI → orchestrator (config → image → cache → provider → result)
         → errorHandler (ClientError / ServerError / NetworkError)
 ```
 
-详见 [设计文档](docs/superpowers/specs/2026-05-30-provider-v3-protocol-driven-design.md)。
+详见 [架构设计](display/2026-05-30-provider-v3-protocol-driven-design.md) · [Provider 优化](display/provider-optimization.md)。
 
 ## 🧪 工程实践
 
@@ -167,29 +163,23 @@ Unlike most vision skills, it's engineered with defense at every layer: Phase 0 
 
 ### 🚀 Quick Start
 
-**User:**
-
 ```bash
-# Tell Claude Code:
-"Install unblind skill from Santazuki/unblind — clone to /tmp, run install.sh"
+# AI install
+"Install unblind with: npx skills add Santazuki/unblind, then run install.sh"
 
-# Or manual:
-git clone https://github.com/Santazuki/unblind.git /tmp/unblind
-bash /tmp/unblind/install.sh
+# Manual install
+npm install -g @santaz-io/unblind
+unblind-install           # install.js deploys to ~/.claude/skills/
 ```
 
-> `install.sh` copies only core files. **npm**: `npm i -g @santaz-io/unblind` → `install.js` (26 files, 80KB).
+> npm package: 26 files, 80KB. `install.js` deploys only core files.
 
 **Developer:**
 
 ```bash
 git clone https://github.com/Santazuki/unblind.git && cd unblind
-node --test tests/test-*.js
+node --test tests/test-*.js   # zero deps
 ```
-
-Send this to Claude Code:
-
-> Install the unblind skill from https://github.com/Santazuki/unblind — clone it and run install.sh.
 
 ### ⚙️ Features
 
