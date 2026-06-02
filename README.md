@@ -133,7 +133,7 @@ CLI → orchestrator (config → image → cache → provider → result)
 - **双 Pipeline 多 Agent 协作**：Part 1 (Architect → Developer + Reviewer) + Part 2 (SL → QA → RE ≤3 轮)，PM 5 关口控制
 - **CLAUDE.md 自动维护**：阶段/重构/模块变化时即时同步
 
-📄 [多 Agent 协作指南](docs/project-prepare-md/多agent协作开发unblind.md) · [DevFlow](https://github.com/Santazuki/devflow)
+📄 [DevFlow](https://github.com/Santazuki/devflow) — 多 Agent 协作框架 · [实战案例](https://github.com/Santazuki/devflow/blob/master/docs/cases/unblind-case-study.md)
 
 ## 🤝 参与贡献
 
