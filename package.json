@@ -1,6 +1,6 @@
 {
   "name": "@santaz-io/unblind",
-  "version": "3.0.0",
+  "version": "1.0.0",
   "description": "Give DeepSeek eyes — self-healing vision skill for Claude Code. Routes images to Mimo/OpenAI. Zero deps.",
   "type": "module",
   "engines": {
