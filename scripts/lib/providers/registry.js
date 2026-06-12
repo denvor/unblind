@@ -5,87 +5,27 @@ import { log } from "../logger.js";
 /**
  * Provider 注册表 — 纯数据
  * 新增 Provider = 加 1 行（不写逻辑代码）
- * overrides 仅允许 buildBody 和 parseError
+ * 当前仅支持单一 OpenAI 兼容 Provider，通过 UNBLIND_ 环境变量配置。
  */
 export const REGISTRY = [
-  // ── OpenAI 协议家族 (5 Provider) ──
   {
     name: "openai",
     protocol: "openai-chat-completions",
-    envKey: "OPENAI_API_KEY",
-    baseUrl: "https://api.openai.com/v1",
+    envKey: "UNBLIND_OPENAI_API_KEY",
+    baseUrl: "http://127.0.0.1:8080/v1",
     model: "gpt-4o",
     limits: { rpm: 500, tpm: 2000000 },
-  },
-  {
-    name: "groq",
-    protocol: "openai-chat-completions",
-    envKey: "GROQ_API_KEY",
-    baseUrl: process.env.GROQ_BASE_URL || "https://api.groq.com/openai/v1",
-    model: process.env.GROQ_MODEL || "llama-4-vision",
-    limits: { rpm: 30, tpm: 30000 },
-    overrides: {
-      buildBody(proto, model, content, opts) {
-        const body = proto.buildBody(model, content, opts);
-        body.max_tokens = Math.min(body.max_tokens, 4096);
-        return body;
-      },
-    },
-  },
-  {
-    name: "together",
-    protocol: "openai-chat-completions",
-    envKey: "TOGETHER_API_KEY",
-    baseUrl: process.env.TOGETHER_BASE_URL || "https://api.together.xyz/v1",
-    model: process.env.TOGETHER_MODEL || "Llama-4-Maverick",
-    limits: { rpm: 60, tpm: 60000 },
-  },
-  {
-    name: "fireworks",
-    protocol: "openai-chat-completions",
-    envKey: "FIREWORKS_API_KEY",
-    baseUrl: process.env.FIREWORKS_BASE_URL || "https://api.fireworks.ai/inference/v1",
-    model: process.env.FIREWORKS_MODEL || "llama-v4",
-    limits: { rpm: 60, tpm: 60000 },
-  },
-  {
-    name: "ollama",
-    protocol: "openai-chat-completions",
-    envKey: "OLLAMA_BASE_URL",
-    baseUrl: process.env.OLLAMA_BASE_URL || "http://localhost:11434/v1",
-    model: "llama3.2-vision",
-    limits: {},
-  },
-
-  // ── Anthropic 协议家族 ──
-  {
-    name: "mimo",
-    protocol: "anthropic-messages",
-    envKey: "MIMO_API_KEY",
-    baseUrl: "",
-    model: "mimo-v2.5",
-    limits: { rpm: 60, rpd: 1000, tpm: 100000 },
-  },
-
-  // ── Google 协议家族 ──
-  {
-    name: "gemini",
-    protocol: "google-generative-ai",
-    envKey: "GEMINI_API_KEY",
-    baseUrl: process.env.GEMINI_BASE_URL || "https://generativelanguage.googleapis.com/v1beta",
-    model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
-    limits: { rpm: 15, rpd: 1500, tpm: 1000000 },
   },
 ];
 
 /**
  * 加载已配置的 Provider，按 order 排序
- * @param {string} order — "openai,groq,mimo"
- * @param {object} opts — { model, timeoutMs, baseUrls }
+ * @param {string} order — "openai"（可扩展）
+ * @param {object} opts — { model, timeoutMs }
  * @returns {Array<{ provider: GenericProvider, name: string }>}
  */
 export function loadProviders(order, opts = {}) {
-  const { model, timeoutMs, baseUrls = {} } = opts;
+  const { model, timeoutMs } = opts;
   const available = new Map();
 
   for (const entry of REGISTRY) {
@@ -98,7 +38,7 @@ export function loadProviders(order, opts = {}) {
       continue;
     }
 
-    const baseUrl = baseUrls[entry.name] || entry.baseUrl;
+    const baseUrl = process.env.UNBLIND_OPENAI_BASE_URL || entry.baseUrl;
     const providerModel = model || entry.model;
 
     try {

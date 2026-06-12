@@ -19,7 +19,7 @@
 
 ## Scenario 2: Phase 0 自愈（配置缺失）
 **Difficulty:** Medium
-**Query:** 用户未设置 MIMO_API_KEY，发一张图片
+**Query:** 用户未设置 UNBLIND_OPENAI_API_KEY，发一张图片
 **Expected behaviors:**
 1. Phase 0.1 检测到 KEY_MISSING
    - **Minimum:** 输出 KEY_MISSING 标记
@@ -33,20 +33,16 @@
    - **Minimum:** 再次运行 0.1，输出为空（健康）
    - **Weight:** 3
 
-## Scenario 3: Provider 故障转移
+## Scenario 3: 熔断重试保护
 **Difficulty:** Hard
-**Query:** 用户同时配置了 MIMO_API_KEY 和 OPENAI_API_KEY，Mimo API 返回 500
+**Query:** API 返回 500 错误
 **Expected behaviors:**
-1. 主 Provider (Mimo) 重试 3 次后失败
+1. Provider 重试 3 次后失败
    - **Minimum:** 指数退避 1s→2s→4s 后放弃
    - **Quality criteria:** 熔断器触发，记录 circuit_open 事件
    - **Weight:** 4
-2. 自动切换到 OpenAI Provider
-   - **Minimum:** 切换后成功返回结果
-   - **Quality criteria:** 用户无感切换，日志记录回退事件
-   - **Weight:** 5
-3. 两个 Provider 的熔断器状态隔离
-   - **Minimum:** Mimo 的 OPEN 状态不影响 OpenAI
+2. 熔断器保护
+   - **Minimum:** 后续请求跳过该 Provider
    - **Weight:** 4
 
 ## Scenario 4: 恶意输入防御

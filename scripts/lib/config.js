@@ -37,7 +37,10 @@ const MAX_SIZE_WARN_THRESHOLD = 20 * 1024 * 1024; // 20MB
  *   retry: { maxAttempts: number, baseDelayMs: number, maxDelayMs: number },
  *   circuitBreaker: { failureThreshold: number, timeoutSeconds: number },
  *   logging: { level: string },
- *   requestTimeoutMs: number
+ *   requestTimeoutMs: number,
+ *   cacheTTLSeconds: number,
+ *   defaultMode: string,
+ *   providerOrder: string,
  * }}
  */
 export function loadConfig() {
@@ -52,28 +55,26 @@ export function loadConfig() {
   const env = settings.env || {};
 
   const config = {
-    apiKey: process.env.MIMO_API_KEY || env.MIMO_API_KEY || "",
-    baseUrl: env.MIMO_BASE_URL || "",
-    model: env.MIMO_VISION_MODEL || "mimo-v2.5",
-    maxImageSize: env.MIMO_MAX_IMAGE_SIZE
-      ? Number(env.MIMO_MAX_IMAGE_SIZE)
+    apiKey: process.env.UNBLIND_OPENAI_API_KEY || env.UNBLIND_OPENAI_API_KEY || "",
+    baseUrl: env.UNBLIND_OPENAI_BASE_URL || "",
+    model: env.UNBLIND_OPENAI_VISION_MODEL || "gpt-4o",
+    maxImageSize: env.UNBLIND_MAX_IMAGE_SIZE
+      ? Number(env.UNBLIND_MAX_IMAGE_SIZE)
       : DEFAULTS.maxImageSize,
-    jpegQuality: env.MIMO_JPEG_QUALITY
-      ? Number(env.MIMO_JPEG_QUALITY)
+    jpegQuality: env.UNBLIND_JPEG_QUALITY
+      ? Number(env.UNBLIND_JPEG_QUALITY)
       : DEFAULTS.jpegQuality,
     retry: { ...DEFAULTS.retry },
     circuitBreaker: { ...DEFAULTS.circuitBreaker },
     logging: { ...DEFAULTS.logging },
-    requestTimeoutMs: env.MIMO_REQUEST_TIMEOUT
-      ? Number(env.MIMO_REQUEST_TIMEOUT)
+    requestTimeoutMs: env.UNBLIND_REQUEST_TIMEOUT
+      ? Number(env.UNBLIND_REQUEST_TIMEOUT)
       : DEFAULTS.requestTimeoutMs,
-    cacheTTLSeconds: env.MIMO_CACHE_TTL
-      ? Number(env.MIMO_CACHE_TTL)
+    cacheTTLSeconds: env.UNBLIND_CACHE_TTL
+      ? Number(env.UNBLIND_CACHE_TTL)
       : DEFAULTS.cacheTTLSeconds,
-    defaultMode: env.MIMO_DEFAULT_MODE || "describe",
-    ollamaUrl: env.OLLAMA_BASE_URL || "",
-    ollamaModel: env.OLLAMA_MODEL || "",
-    providerOrder: env.UNBLIND_PROVIDER_ORDER || "mimo,openai,ollama",
+    defaultMode: env.UNBLIND_DEFAULT_MODE || "describe",
+    providerOrder: env.UNBLIND_PROVIDER_ORDER || "openai",
   };
 
   // 性能警告
@@ -84,7 +85,7 @@ export function loadConfig() {
     });
     process.stderr.write(
       `⚠️ 性能提示：当前图片大小上限 ${(config.maxImageSize / 1024 / 1024).toFixed(0)}MB，` +
-      `超过 20MB 可能导致处理变慢。可在 settings.json 中设置 MIMO_MAX_IMAGE_SIZE 调整。\n`
+      `超过 20MB 可能导致处理变慢。可在 settings.json 中设置 UNBLIND_MAX_IMAGE_SIZE 调整。\n`
     );
   }
 

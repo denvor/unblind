@@ -3,20 +3,34 @@
 <p align="center">
   👁️ 自愈配置 · 熔断重试 · 安全沙箱 · 零依赖
   <br>
-  🛠️ 全程 <b>Claude Code</b> 开发 · 自研<b>双 Pipeline 多 Agent 协作模式</b>
-</p>
-<p align="center">
-  <a href="#english">English</a> | 中文
+  🛠️ <b>OpenAI 兼容 API</b> · 适配本地部署模型
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/version-1.0-blue" alt="version">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="license">
-  <img src="https://img.shields.io/badge/node-≥18-brightgreen" alt="node">
-  <img src="https://img.shields.io/badge/tests-171%20pass-success" alt="tests">
+  <img src="https://img.shields.io/badge/node-%E2%89%A518-brightgreen" alt="node">
   <img src="https://img.shields.io/badge/dependencies-0-zero?labelColor=white" alt="zero deps">
-  <img src="https://img.shields.io/badge/agentskills.io-compatible-purple" alt="agentskills.io">
 </p>
+
+---
+
+## 📌 关于本项目
+
+本项目 fork 自 [Santazuki/unblind](https://github.com/Santazuki/unblind)，原项目设计为支持 **7 个 Provider × 3 个协议家族**（Anthropic Messages、OpenAI Chat、Google Gen AI），配置项繁多。
+
+由于本人使用 **DeepSeek (官方 API，v4 模型)** 和本地部署的 **Qwen3.6-35B-A3B**（OpenAI 兼容接口），实际只需要一个 OpenAI 兼容 Provider。因此按照自身环境做了精简：
+
+- **去掉** 6 个 Provider 和 2 个协议，只保留 OpenAI Chat Completions
+- **环境变量统一**为 `UNBLIND_` 前缀，不再散落 `MIMO_` / `OPENAI_` / `OLLAMA_` 等命名
+- **安装脚本**改为交互式配置，不再需要手动编辑 JSON
+- 核心防御机制（Phase 0 自愈、熔断重试、SHA256 缓存、魔数校验）全部保留
+
+如果你也只需要对接一个 OpenAI 兼容 API（任一支持 `/v1/chat/completions` 的服务均可），这个分支更简单直接。
+
+> 原项目链接：[https://github.com/Santazuki/unblind](https://github.com/Santazuki/unblind)
+>
+> 需要多 Provider 支持请使用原版。
 
 ---
 
@@ -28,28 +42,31 @@ Unblind 是给 AI Agent 用的视觉后端——不是面向人类的 App，而�
 
 ```
 用户发图 → Phase 0 自检（静默）→ 魔数校验 → 缓存查询 → Provider → 返回描述
-                                                       （配几个用几个，失败自动切）
 ```
 
 ## 🚀 快速开始
 
 ```bash
-# AI 安装
-"帮我安装 unblind skill，npx skills add Santazuki/unblind，然后运行 install.sh"
-
-# 手动安装
-npm install -g @santaz-io/unblind
-unblind-install           # install.js 部署到 ~/.claude/skills/
+# 从仓库安装
+git clone <你的仓库地址> && cd unblind
+bash install.sh    # 交互式配置 4 个参数
 ```
 
-> npm 包 26 文件 80KB，`install.js` 只部署核心（scripts/、SKILL.md、README.md）。
+安装过程会提示输入：
 
-首次运行自动检测缺失配置并修复。
+| 配置项 | 说明 | 示例 |
+|--------|------|------|
+| `UNBLIND_OPENAI_BASE_URL` | API 地址 | `https://api.deepseek.com/v1` 或 `http://127.0.0.1:8080/v1` |
+| `UNBLIND_OPENAI_VISION_MODEL` | 视觉模型名 | `gpt-4o` 或 `Qwen3.6-35B-A3B` |
+| `UNBLIND_OPENAI_API_KEY` | API Key | `sk-...` |
+| `UNBLIND_PROVIDER_ORDER` | Provider 顺序 | `openai`（目前唯一值，保留未来扩展） |
+
+配置写入 `~/.claude/settings.json`，后续调用自动读取。
 
 **开发者**：
 
 ```bash
-git clone https://github.com/Santazuki/unblind.git && cd unblind
+git clone <你的仓库地址> && cd unblind
 node --test tests/test-*.js   # 零依赖
 ```
 
@@ -58,9 +75,8 @@ node --test tests/test-*.js   # 零依赖
 | 特性 | 说明 |
 |------|------|
 | 🩺 **Phase 0 自愈** | 每次调用静默检查环境，配置缺失当场修复，不打断用户 |
-| 🔌 **熔断 + 指数退避** | 每 Provider 独立 CircuitBreaker，5 次失败熔断 60s |
+| 🔌 **熔断 + 指数退避** | Provider 独立 CircuitBreaker，失败 5 次熔断 60s |
 | 💾 **SHA256 持久化缓存** | 内容寻址，TTL + LRU 1000，跨进程命中，`--no-cache` 跳过 |
-| 🔀 **Provider 故障转移** | 7 个 Provider 链式轮换，`UNBLIND_PROVIDER_ORDER` 自定义顺序 |
 | 🛡️ **魔数文件校验** | 读取文件头字节，拒绝伪装成图片的攻击文件 |
 | 🔒 **安全沙箱** | 零 exec / child_process，API Key 不在任何输出中暴露 |
 | 📐 **结构化输出** | `--format json|yaml|csv`，Agent 可编程调用 |
@@ -80,17 +96,31 @@ node --test tests/test-*.js   # 零依赖
 
 ## 🎯 视觉模型
 
-预置 7 个 Provider 入口（配几个 Key 用几个），新增只需加一行数据：
+支持任意 OpenAI 兼容 API。通过 `UNBLIND_` 环境变量配置，安装时一次配好即可使用：
 
-| Provider | 协议族 | 默认模型 |
-|----------|--------|------|
-| Mimo | Anthropic Messages | mimo-v2.5 |
-| OpenAI | OpenAI Chat Completions | gpt-4o |
-| Gemini | Google Generative AI | gemini-2.5-flash |
-| Ollama | OpenAI 兼容（本地） | llama3.2-vision |
-| Groq | OpenAI 兼容 | llama-4-vision |
-| Together | OpenAI 兼容 | Llama-4-Maverick |
-| Fireworks | OpenAI 兼容 | llama-v4 |
+| 配置项 | 说明 | 默认值 |
+|--------|------|--------|
+| `UNBLIND_OPENAI_BASE_URL` | API 地址 | `http://127.0.0.1:8080/v1` |
+| `UNBLIND_OPENAI_VISION_MODEL` | 视觉模型名 | `gpt-4o` |
+| `UNBLIND_OPENAI_API_KEY` | API Key | — |
+
+**典型场景：**
+
+```json
+// DeepSeek 官方 API
+{
+  "UNBLIND_OPENAI_BASE_URL": "https://api.deepseek.com/v1",
+  "UNBLIND_OPENAI_VISION_MODEL": "deepseek-v4",
+  "UNBLIND_OPENAI_API_KEY": "sk-xxx"
+}
+
+// 本地 Qwen3.6-35B-A3B（vLLM / ollama）
+{
+  "UNBLIND_OPENAI_BASE_URL": "http://127.0.0.1:8080/v1",
+  "UNBLIND_OPENAI_VISION_MODEL": "Qwen3.6-35B-A3B",
+  "UNBLIND_OPENAI_API_KEY": "sk-xxx"
+}
+```
 
 ## ⌨️ CLI
 
@@ -100,52 +130,26 @@ unblind.mjs <a.png> <b.png> compare  # 多图对比
 unblind.mjs <img> --format json      # 结构化输出
 unblind.mjs --health                 # 连通性诊断
 unblind.mjs --config                 # 查看配置
-unblind.mjs --set-model <model>      # 切换模型
 unblind.mjs --cache-stats            # 缓存统计
 unblind.mjs --clear-cache            # 清空缓存
 ```
 
 ## 🏗️ 架构
 
-协议驱动——把 LLM API 的 Provider 层拆成两个独立维度：**协议**（怎么发请求）+ **Provider**（连到哪）。复杂度从 N×M 降到 N+M。
+协议驱动——把 LLM API 的 Provider 层拆成协议（怎么发请求）和 Provider（连到哪），支持任意 OpenAI 兼容 API。
 
 ```
 CLI → orchestrator (config → image → cache → provider → result)
-        → providers/ (GenericProvider — 唯一类 → protocols 纯函数调度)
+        → providers/ (GenericProvider — 唯二类 → protocols 纯函数调度)
         → httpClient (fetch + 超时 + parseError 委托)
         → cache (SHA256 + TTL + LRU)
         → retry (指数退避 + CircuitBreaker)
         → errorHandler (ClientError / ServerError / NetworkError)
 ```
 
-3 个协议对象（Anthropic Messages / OpenAI Chat / Google Gen AI）+ 7 行注册表数据 = 全部 Provider。新增厂商加一行，新增协议加一个对象，互不影响。
+1 个协议对象（OpenAI Chat）+ 1 行注册表数据 = 完整 Provider。更换厂商只需修改注册表中的 baseUrl 和 envKey。
 
-详见 [架构设计](display/2026-05-30-provider-v3-protocol-driven-design.md) · [Provider 优化](display/provider-optimization.md)。
-
-## 🧪 工程实践
-
-- **171 tests，169 pass**，GitHub Actions 实跑
-- **TDD**：`node --test` 内置框架，先测试后实现
-- **安全审计**：三轮 CLEAN，18 security tests
-- **零 npm 依赖**：Node.js >= 18 内置模块
-- **双 Pipeline 多 Agent 协作**：Part 1 (Architect → Developer + Reviewer) + Part 2 (SL → QA → RE ≤3 轮)，PM 5 关口控制
-- **CLAUDE.md 自动维护**：阶段/重构/模块变化时即时同步
-
-📄 [DevFlow](https://github.com/Santazuki/devflow) — 多 Agent 协作框架 · [实战案例](https://github.com/Santazuki/devflow/blob/master/docs/cases/unblind-case-study.md)
-
-## 🤝 参与贡献
-
-欢迎提 Issue 和 PR。
-
-### 开发环境
-
-```bash
-git clone https://github.com/Santazuki/unblind.git
-cd unblind
-# 零依赖，直接可用
-```
-
-### 运行测试
+## 🧪 测试
 
 ```bash
 node --test tests/test-*.js
@@ -153,60 +157,12 @@ node --test tests/test-*.js
 
 需要 API Key 的测试在无 Key 时自动跳过。
 
----
-
-<span id="english"></span>
-
-## English
-
-Unblind is a vision backend for AI Agents — not a human-facing app, but infrastructure for Agents. It routes images to vision APIs and returns text descriptions, giving non-multimodal models the ability to "see."
-
-Unlike most vision skills, it's engineered with defense at every layer: Phase 0 self-healing, circuit breaker retry, SHA256 persistent cache, magic byte validation, and a 3-round security audit (CLEAN). Built entirely with **Claude Code** and a custom **dual-pipeline multi-agent workflow**.
-
-### 🚀 Quick Start
-
-```bash
-# AI install
-"Install unblind with: npx skills add Santazuki/unblind, then run install.sh"
-
-# Manual install
-npm install -g @santaz-io/unblind
-unblind-install           # install.js deploys to ~/.claude/skills/
-```
-
-> npm package: 26 files, 80KB. `install.js` deploys only core files.
-
-**Developer:**
-
-```bash
-git clone https://github.com/Santazuki/unblind.git && cd unblind
-node --test tests/test-*.js   # zero deps
-```
-
-### ⚙️ Features
-
-- **Phase 0 Self-Healing**: Silent pre-flight check, auto-repairs config gaps
-- **Circuit Breaker + Retry**: Per-provider isolation, exponential backoff
-- **SHA256 Persistent Cache**: Content-addressed, TTL + LRU 1000, cross-process hit
-- **Provider Failover**: Chain rotation across 7 providers, auto fallback
-- **Magic Byte Validation**: Rejects disguised attack files
-- **Security Sandbox**: Zero exec, API key never exposed
-- **Structured Output**: `--format json|yaml|csv`
-- **Zero Dependencies**: Node.js >= 18 built-in modules only
-
-### 🧪 By the Numbers
-
-- **171 tests**, 169 pass, 0 fail — GitHub Actions
-- **7 pre-registered providers** (use what you configure), 3 protocol families, 6 analysis modes
-- **15 modules**, zero npm dependencies
-- **3-round security audit**, 18 security tests, all CLEAN
-
-### License
+## 📄 许可
 
 MIT
 
 ---
 
 <p align="center">
-  <sub>Built by <a href="https://github.com/Santazuki">Santaz</a>. Workflow extracted into <a href="https://github.com/Santazuki/devflow">DevFlow</a>.</sub>
+  <sub>基于 <a href="https://github.com/Santazuki/unblind">Santazuki/unblind</a> 按自身环境修改。</sub>
 </p>

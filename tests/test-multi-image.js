@@ -98,48 +98,6 @@ describe("CLI multi-image parsing", () => {
   });
 });
 
-/* ======== Anthropic protocol buildContent tests ======== */
-
-describe("anthropic-messages buildContent multi-image", () => {
-  const proto = PROTOCOLS["anthropic-messages"];
-
-  it("should build multi-image content array with N images + 1 text", () => {
-    const inputs = [
-      { type: "image", data: "data:image/png;base64,abc", mimeType: "image/png" },
-      { type: "image", data: "data:image/png;base64,def", mimeType: "image/png" },
-    ];
-    const content = proto.buildContent(inputs, "compare these");
-
-    assert.equal(content.length, 3, "should have 2 image + 1 text entries");
-    assert.equal(content[0].type, "image");
-    assert.equal(content[0].source.type, "base64");
-    assert.equal(content[0].source.data, "abc");
-    assert.equal(content[1].source.data, "def");
-    assert.equal(content[2].type, "text");
-    assert.equal(content[2].text, "compare these");
-  });
-
-  it("should handle 3 images", () => {
-    const inputs = [
-      { type: "image", data: "data:image/png;base64,a", mimeType: "image/png" },
-      { type: "image", data: "data:image/png;base64,b", mimeType: "image/png" },
-      { type: "image", data: "data:image/png;base64,c", mimeType: "image/png" },
-    ];
-    const content = proto.buildContent(inputs, "test");
-    assert.equal(content.length, 4, "3 images + 1 text");
-  });
-
-  it("should preserve mime type from image inputs", () => {
-    const inputs = [
-      { type: "image", data: "data:image/jpeg;base64,xyz", mimeType: "image/jpeg" },
-      { type: "image", data: "data:image/webp;base64,uvw", mimeType: "image/webp" },
-    ];
-    const content = proto.buildContent(inputs, "compare");
-    assert.equal(content[0].source.media_type, "image/jpeg");
-    assert.equal(content[1].source.media_type, "image/webp");
-  });
-});
-
 /* ======== OpenAI protocol buildContent tests ======== */
 
 describe("openai-chat-completions buildContent multi-image", () => {

@@ -48,13 +48,13 @@ describe("config", () => {
 
   it("should read user-set values", () => {
     writeTestSettings({
-      MIMO_API_KEY: "tp-test-override",
-      MIMO_VISION_MODEL: "mimo-v2-omni",
+      UNBLIND_OPENAI_API_KEY: "tp-test-override",
+      UNBLIND_OPENAI_VISION_MODEL: "gpt-4o",
     });
     const cfg = loadConfig();
-    // process.env.MIMO_API_KEY 优先级高于 settings.json，所以只验证 model
+    // process.env.UNBLIND_OPENAI_API_KEY 优先级高于 settings.json，所以只验证 model
     assert.ok(cfg.apiKey.length > 0, "apiKey should be set from env or settings");
-    assert.equal(cfg.model, "mimo-v2-omni");
+    assert.equal(cfg.model, "gpt-4o");
   });
 
   it("should warn when maxImageSize > 20MB", () => {
@@ -62,7 +62,7 @@ describe("config", () => {
     const orig = process.stderr.write;
     process.stderr.write = (chunk) => { warnings.push(chunk); return true; };
 
-    writeTestSettings({ MIMO_API_KEY: "tp-test" });
+    writeTestSettings({ UNBLIND_OPENAI_API_KEY: "tp-test" });
     loadConfig();
 
     process.stderr.write = orig;
@@ -72,7 +72,7 @@ describe("config", () => {
   });
 
   it("should apply maxImageSize default if not set", () => {
-    writeTestSettings({ MIMO_API_KEY: "tp-test" });
+    writeTestSettings({ UNBLIND_OPENAI_API_KEY: "tp-test" });
     const cfg = loadConfig();
     assert.equal(cfg.maxImageSize, 50 * 1024 * 1024);
   });

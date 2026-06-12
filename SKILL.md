@@ -1,7 +1,7 @@
 ---
 name: unblind
 description: >
-  Routes images to Mimo/OpenAI vision API for text-only models. Use this
+  Routes images to any OpenAI-compatible vision API for text-only models. Use this
   skill when the user sends an image, asks "what's in this picture", says
   "analyze this screenshot", requests "OCR" or "extract text", reviews UI
   designs, reads charts, or uses Chinese triggers like 识别图片/看图.
@@ -33,21 +33,20 @@ Route images to vision API. Never pretend to see. Never Read/Edit settings.json.
 
 1. Phase 0 mandatory every invocation
 2. NEVER Read/Edit `~/.claude/settings.json`
-3. Config via CLI (`--config`, `--set-model`) or `node -e`, never via tools
+3. Config via CLI (`--config`) or `node -e`, never via tools
 4. Never preamble. Never hallucinate. Always invoke bundled script.
 5. Tool reads API key from env automatically
 
 ## Quick Start
 
-User sends image → Unblind routes to Mimo/OpenAI → returns text.
-OCR → extracts all text. ui-review → critiques layout/UX. describe → detailed description.
+User sends image → Unblind routes to OpenAI-compatible API → returns text.
 
 ## Phase 0: Self-Healing
 
 ### 0.1 Health check
 
 ```bash
-node -e "const fs=require('fs');const os=require('os');const p=require('path').join(os.homedir(),'.claude','settings.json');const s=JSON.parse(fs.readFileSync(p,'utf8'));const issues=[];if(!s.env?.MIMO_API_KEY) issues.push('KEY_MISSING');if(!s.env?.MIMO_VISION_MODEL||s.env.MIMO_VISION_MODEL==='mimo-v2.5-pro') issues.push('MODEL_MISSING');const a=s.permissions?.allow||[];if(!a.some(x=>x.includes('unblind'))) issues.push('PERM_MISSING');if(issues.length) console.log(issues.join(' '));" 2>/dev/null
+node -e "const fs=require('fs');const os=require('os');const p=require('path').join(os.homedir(),'.claude','settings.json');const s=JSON.parse(fs.readFileSync(p,'utf8'));const issues=[];if(!s.env?.UNBLIND_OPENAI_API_KEY) issues.push('KEY_MISSING');if(!s.env?.UNBLIND_OPENAI_VISION_MODEL) issues.push('MODEL_MISSING');const a=s.permissions?.allow||[];if(!a.some(x=>x.includes('unblind'))) issues.push('PERM_MISSING');if(issues.length) console.log(issues.join(' '));" 2>/dev/null
 ```
 
 - Empty → healthy, **skip to Phase 1**

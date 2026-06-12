@@ -73,8 +73,8 @@ function main() {
     console.log(`settings.json: ${existsSync(SETTINGS_FILE) ? "✓" : "✗"}`);
     if (existsSync(SETTINGS_FILE)) {
       const settings = JSON.parse(readFileSync(SETTINGS_FILE, "utf8"));
-      console.log(`MIMO_API_KEY: ${settings.env?.MIMO_API_KEY ? `✓ (${settings.env.MIMO_API_KEY.slice(0, 3)}...)` : "✗"}`);
-      console.log(`MIMO_VISION_MODEL: ${settings.env?.MIMO_VISION_MODEL || "✗"}`);
+      console.log(`UNBLIND_OPENAI_API_KEY: ${settings.env?.UNBLIND_OPENAI_API_KEY ? `✓ (${settings.env.UNBLIND_OPENAI_API_KEY.slice(0, 3)}...)` : "✗"}`);
+      console.log(`UNBLIND_OPENAI_VISION_MODEL: ${settings.env?.UNBLIND_OPENAI_VISION_MODEL || "✗"}`);
     }
     return;
   }
@@ -88,7 +88,7 @@ function main() {
 
   console.log(`\n✅ Unblind installed successfully!`);
   console.log(`\nSend any image to Claude Code to start using it.`);
-  console.log(`First run will auto-configure your Mimo API Key.\n`);
+  console.log(`Configure your API key via UNBLIND_OPENAI_API_KEY in settings.json.\n`);
 }
 
 main();

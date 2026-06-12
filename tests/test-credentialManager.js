@@ -3,41 +3,33 @@ import assert from "node:assert/strict";
 import { getApiKey, getBaseUrl } from "../scripts/lib/credentialManager.js";
 
 describe("credentialManager", () => {
-  describe("getBaseUrl", () => {
-    it("should detect token-plan URL for tp- keys", () => {
-      const url = getBaseUrl("tp-test123");
-      assert.ok(url.includes("token-plan-cn.xiaomimimo.com"));
-      assert.ok(url.endsWith("/anthropic"));
-    });
-
-    it("should detect api URL for sk- keys", () => {
-      const url = getBaseUrl("sk-ant-test");
-      assert.ok(url.includes("api.xiaomimimo.com"));
-    });
-
-    it("should return token-plan URL as default for unknown prefix", () => {
-      const url = getBaseUrl("unknown-key");
-      assert.ok(url.includes("token-plan-cn"), "defaults to token-plan for unknown prefix");
-    });
-
-    it("should return empty string for empty key", () => {
-      const url = getBaseUrl("");
-      assert.equal(url, "");
-    });
-  });
-
   describe("getApiKey", () => {
-    it("should read from MIMO_API_KEY env", () => {
-      process.env.MIMO_API_KEY = "tp-env-test";
+    it("should read from UNBLIND_OPENAI_API_KEY env", () => {
+      process.env.UNBLIND_OPENAI_API_KEY = "sk-test-key";
       const key = getApiKey();
-      assert.equal(key, "tp-env-test");
-      delete process.env.MIMO_API_KEY;
+      assert.equal(key, "sk-test-key");
+      delete process.env.UNBLIND_OPENAI_API_KEY;
     });
 
     it("should return empty string if not set", () => {
-      delete process.env.MIMO_API_KEY;
+      delete process.env.UNBLIND_OPENAI_API_KEY;
       const key = getApiKey();
       assert.equal(key, "");
+    });
+  });
+
+  describe("getBaseUrl", () => {
+    it("should read from UNBLIND_OPENAI_BASE_URL env", () => {
+      process.env.UNBLIND_OPENAI_BASE_URL = "https://custom.api.com/v1";
+      const url = getBaseUrl();
+      assert.equal(url, "https://custom.api.com/v1");
+      delete process.env.UNBLIND_OPENAI_BASE_URL;
+    });
+
+    it("should return default URL when env not set", () => {
+      delete process.env.UNBLIND_OPENAI_BASE_URL;
+      const url = getBaseUrl();
+      assert.equal(url, "http://127.0.0.1:8080/v1");
     });
   });
 });

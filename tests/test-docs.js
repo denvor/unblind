@@ -26,8 +26,8 @@ function resolveCommand(cmd) {
     .replace("<image-path>", join(ROOT, "tests", "sample_images", "README.md")) // 用已知存在的文件
     .replace("<image>", join(ROOT, "tests", "sample_images", "README.md"))
     .replace("<mode>", "describe")
-    .replace("<model>", "mimo-v2.5")
-    .replace("<m>", "mimo-v2.5");
+    .replace("<model>", "gpt-4o")
+    .replace("<m>", "gpt-4o");
 }
 
 describe("documented commands", () => {
@@ -58,7 +58,7 @@ describe("documented commands", () => {
       // 命令应该要么成功执行，要么至少能识别（输出 usage/help）
       const ok = result.includes("Usage") || result.includes("Modes") ||
                  result.includes("当前配置") || result.includes("缓存") ||
-                 result.includes("健康检查") || result.includes("已切换");
+                 result.includes("健康检查");
       assert.ok(ok, `Static command should be valid: ${cmd}\nOutput: ${result.slice(0, 200)}`);
     }
   });
@@ -113,10 +113,4 @@ describe("documented commands", () => {
     assert.ok(r.stdout.includes("缓存"), `Should show cache. Got: ${r.stdout.slice(0, 200)}`);
   });
 
-  it("--set-model with invalid model should error cleanly", () => {
-    const r = runCli("--set-model invalid-model");
-    assert.ok(!r.ok, "should exit non-zero");
-    assert.ok(r.stderr.includes("无效模型") || r.stdout.includes("无效模型"),
-      "Should reject invalid model with clear error");
-  });
 });

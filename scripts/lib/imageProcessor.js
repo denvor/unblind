@@ -81,7 +81,7 @@ export async function processImage(imagePath, options = {}) {
     const sizeMB = (fileStat.size / 1024 / 1024).toFixed(1);
     const maxMB = (maxImageSize / 1024 / 1024).toFixed(0);
     throw new ClientError(`图片文件过大 (${sizeMB}MB)`, {
-      suggestion: `文件大小上限为 ${maxMB}MB。请在 settings.json 中设置 MIMO_MAX_IMAGE_SIZE 调整上限，或压缩图片后重试。`,
+      suggestion: `文件大小上限为 ${maxMB}MB。请在 settings.json 中设置 UNBLIND_MAX_IMAGE_SIZE 调整上限，或压缩图片后重试。`,
     });
   }
 

@@ -80,18 +80,9 @@ describe("CLI", () => {
     assert.ok(result.includes("视觉模型"), "should show model");
   });
 
-  it("should reject invalid model", () => {
-    try {
-      execSync(`node "${UNBLIND}" --set-model invalid-model`, { encoding: "utf8" });
-      assert.fail("should have thrown");
-    } catch (e) {
-      const output = (e.stderr || "") + (e.stdout || "");
-      assert.ok(output.includes("无效模型"), "should reject invalid model");
-    }
-  });
 
 
-/* ======== --prompt flag tests ======== */
+  /* ======== --prompt flag tests ======== */
 
 describe("--prompt flag", () => {
   const p = join(tmpdir(), "test-prompt.png");

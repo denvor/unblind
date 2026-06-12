@@ -2,11 +2,9 @@
 import { resolve } from "path";
 import { analyze, runHealthCheck } from "./lib/orchestrator.js";
 import { formatError } from "./lib/errorHandler.js";
-import { loadConfig, saveConfig } from "./lib/config.js";
+import { loadConfig } from "./lib/config.js";
 import { getStats, clear } from "./lib/cache.js";
 import { VALID_MODES } from "./lib/providers/provider.js";
-
-const VALID_MODELS = ["mimo-v2.5", "mimo-v2-omni"];
 
 function usage() {
   console.log(`Usage:
@@ -14,7 +12,6 @@ function usage() {
   node unblind.mjs <img1> <img2> [...更多图片] [mode]  分析/对比图片
   node unblind.mjs --health                          健康检查
   node unblind.mjs --config                          查看当前配置
-  node unblind.mjs --set-model <model>               切换视觉模型
 
 Modes:
   describe     (default) 图片描述
@@ -29,9 +26,7 @@ Options:
   --format <json|yaml|csv>  指定输出格式（追加格式指令到 prompt）
   --prompt <text>  自定义分析提示词（覆盖 mode 预设 prompt）
 
-Available models:
-  mimo-v2.5    100/200 credits（默认，推荐）
-  mimo-v2-omni 280/1400 credits`);
+视觉模型通过 settings.json 中的 UNBLIND_OPENAI_VISION_MODEL 配置。`);
   process.exit(1);
 }
 
@@ -74,25 +69,11 @@ async function main() {
     console.log("  配置文件: ~/.claude/settings.json");
     console.log(`  视觉模型: ${cfg.model}`);
     console.log(`  API Key:  ${cfg.apiKey ? cfg.apiKey.slice(0, 3) + "***" : "未设置"}`);
-    console.log(`  Base URL: ${cfg.baseUrl || "自动检测"}`);
+    console.log(`  Base URL: ${cfg.baseUrl || "未设置"}`);
     console.log(`  图片上限: ${(cfg.maxImageSize / 1024 / 1024).toFixed(0)}MB`);
     console.log(`  缓存 TTL: ${cfg.cacheTTLSeconds}s`);
     console.log(`  重试次数: ${cfg.retry.maxAttempts}`);
     console.log(`  超时时间: ${cfg.requestTimeoutMs / 1000}s`);
-    process.exit(0);
-  }
-
-  // --set-model <model>
-  const modelIdx = args.indexOf("--set-model");
-  if (modelIdx >= 0) {
-    const model = args[modelIdx + 1];
-    if (!model || !VALID_MODELS.includes(model)) {
-      console.error(`无效模型: ${model || "未指定"}`);
-      console.error(`可用模型: ${VALID_MODELS.join(", ")}`);
-      process.exit(1);
-    }
-    saveConfig({ MIMO_VISION_MODEL: model });
-    console.log(`已切换到 ${model}。下次识图生效。`);
     process.exit(0);
   }
 
@@ -113,11 +94,10 @@ async function main() {
   }
 
   // 过滤 flags 和 flag 值，剩余为位置参数
-  const flagSet = new Set(["--health", "--config", "--no-cache", "--cache-stats", "--clear-cache", "--set-model", "--format", "--prompt"]);
+  const flagSet = new Set(["--health", "--config", "--no-cache", "--cache-stats", "--clear-cache", "--format", "--prompt"]);
   const positional = args.filter((a, i) => {
     if (flagSet.has(a)) return false;
     if (i > 0 && args[i - 1] === "--format") return false;
-    if (i > 0 && args[i - 1] === "--set-model") return false;
     if (i > 0 && args[i - 1] === "--prompt") return false;
     return true;
   });

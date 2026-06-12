@@ -182,8 +182,8 @@ describe("Security", () => {
   // ==========================================================
   describe("API Key Protection", () => {
     it("should mask API key in --config output", () => {
-      const testKey = "sk-ant-test123456secret";
-      const r = runCLI(["--config"], { MIMO_API_KEY: testKey });
+      const testKey = "sk-test123456secret";
+      const r = runCLI(["--config"], { UNBLIND_OPENAI_API_KEY: testKey });
 
       assert.equal(r.status, 0, "--config should exit 0");
       const prefix = testKey.slice(0, 3);
@@ -201,14 +201,14 @@ describe("Security", () => {
     });
 
     it("should not include full API key in any output channel", () => {
-      const testKey = "sk-ant-full-key-xyz789";
-      const r = runCLI(["--config"], { MIMO_API_KEY: testKey });
+      const testKey = "sk-full-key-xyz789";
+      const r = runCLI(["--config"], { UNBLIND_OPENAI_API_KEY: testKey });
 
       assert.equal(r.status, 0, "--config should exit 0");
       // Check both stdout and stderr
       const allOutput = (r.stdout || "") + (r.stderr || "");
       assert.ok(
-        !allOutput.includes("sk-ant-full-key-xyz789"),
+        !allOutput.includes("sk-full-key-xyz789"),
         "full key must not appear anywhere in output",
       );
     });

@@ -1,7 +1,6 @@
 import { createHash } from "crypto";
 import { log, setLogLevel } from "./logger.js";
 import { loadConfig } from "./config.js";
-import { getApiKey, getBaseUrl } from "./credentialManager.js";
 import { processImage } from "./imageProcessor.js";
 import { withRetry, CircuitBreaker } from "./retry.js";
 import { ClientError } from "./errorHandler.js";
@@ -17,21 +16,14 @@ const FORMAT_PROMPTS = {
 
 /** 构建 Provider 链，每个 Provider 独立 CircuitBreaker */
 function buildProviderChain(config) {
-  const mimoKey = getApiKey();
-  const baseUrls = {
-    mimo: config.baseUrl || (mimoKey ? getBaseUrl(mimoKey) : ""),
-  };
-  const model = process.env.OPENAI_VISION_MODEL || config.model;
-
   const providers = loadProviders(config.providerOrder, {
-    model,
+    model: config.model,
     timeoutMs: config.requestTimeoutMs,
-    baseUrls,
   });
 
   return providers.map(p => ({
     ...p,
-    cb: new CircuitBreaker({ failureThreshold: p.name === "ollama" ? 3 : 5, timeoutSeconds: 60 }),
+    cb: new CircuitBreaker({ failureThreshold: 5, timeoutSeconds: 60 }),
   }));
 }
 
@@ -102,7 +94,7 @@ export async function analyze(imagePaths, mode = "describe", options = {}) {
   const chain = buildProviderChain(config);
   if (chain.length === 0) {
     throw new ClientError("API Key 未配置", {
-      suggestion: "请设置 MIMO_API_KEY 或 OPENAI_API_KEY 环境变量",
+      suggestion: "请设置 UNBLIND_OPENAI_API_KEY 环境变量",
     });
   }
 

@@ -42,8 +42,9 @@ describe("install.sh", () => {
       encoding: "utf8", timeout: 3000, shell: "bash",
     });
 
+    // install.sh 有交互式提示，通过 echo 传入默认值
     const out = execSync(
-      `HOME="${fakeHome}" bash "${join(ROOT, "install.sh").replace(/\\/g, "/")}"`,
+      `echo -e "\n\nsk-test-key\n" | HOME="${fakeHome}" bash "${join(ROOT, "install.sh").replace(/\\/g, "/")}"`,
       { encoding: "utf8", timeout: 15000, cwd: ROOT, shell: "bash" },
     );
     assert.ok(out.includes("已部署"), `install.sh should complete. Got: ${out.slice(0, 300)}`);

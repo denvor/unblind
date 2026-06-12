@@ -17,7 +17,7 @@ const MINI_PNG = Buffer.from([
 ]);
 
 // API 连通性预检
-const apiKey = process.env.MIMO_API_KEY;
+const apiKey = process.env.UNBLIND_OPENAI_API_KEY;
 let apiAvailable = false;
 
 async function probeApi() {

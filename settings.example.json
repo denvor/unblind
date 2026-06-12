@@ -1,9 +1,8 @@
 {
   "env": {
-    "MIMO_API_KEY": "YOUR_API_KEY_HERE",
-    "MIMO_VISION_MODEL": "mimo-v2.5",
-    "MIMO_MAX_IMAGE_SIZE": 52428800,
-    "MIMO_CACHE_TTL": 3600,
-    "MIMO_DEFAULT_MODE": "describe"
+    "UNBLIND_OPENAI_BASE_URL": "http://127.0.0.1:8080/v1",
+    "UNBLIND_OPENAI_VISION_MODEL": "gpt-4o",
+    "UNBLIND_OPENAI_API_KEY": "YOUR_API_KEY_HERE",
+    "UNBLIND_PROVIDER_ORDER": "openai"
   }
 }

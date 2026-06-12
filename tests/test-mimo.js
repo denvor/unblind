@@ -26,7 +26,7 @@ async function probeApi() {
 
 await probeApi();
 
-describe("MimoProvider (v3 GenericProvider)", () => {
+describe.skip("MimoProvider (v3 GenericProvider)", () => {
   it("should have name 'mimo'", () => {
     const p = new GenericProvider({
       name: "mimo",
