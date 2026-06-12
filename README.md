@@ -164,5 +164,5 @@ MIT
 ---
 
 <p align="center">
-  <sub>基于 <a href="https://github.com/Santazuki/unblind">Santazuki/unblind</a> 按自身环境修改。</sub>
+  <sub>基于 <a href="https://github.com/Santazuki/unblind">Santazuki/unblind</a> 按自身环境修改。<br>修改维护：<a href="https://github.com/denvor">denvor</a></sub>
 </p>
