@@ -103,13 +103,17 @@ $envFile = Join-Path $env:TEMP "unblind_env.json"
 # 确保 settings.json 所在目录存在
 New-Item -ItemType Directory -Path (Split-Path $SettingsFile -Parent) -Force | Out-Null
 
-# 把路径里的 \ 转成 /，Node.js 在 Windows 上也能识别
+# 把路径里的 \ 转成 /，Node.js 在 Windows 上也识别
 $settingsFwd = $SettingsFile -replace '\\', '/'
-$nodeScript = @"
+$envFwd = $envFile -replace '\\', '/'
+
+# 写 Node.js 脚本到临时文件（避免 -e 内联的转义问题）
+$jsFile = Join-Path $env:TEMP "unblind_merge.js"
+@"
 const fs = require('fs');
 
 // 读取用户输入
-const newEnv = JSON.parse(fs.readFileSync('$envFile', 'utf8'));
+const newEnv = JSON.parse(fs.readFileSync('$envFwd', 'utf8'));
 
 // 读取已有配置
 let s = {};
@@ -129,18 +133,21 @@ if (!s.permissions.allow.some(r => r.includes('unblind'))) {
 
 fs.writeFileSync('$settingsFwd', JSON.stringify(s, null, 2) + '\n');
 console.log('[OK] 配置已写入');
-"@
+"@ | Set-Content $jsFile -Encoding UTF8
 
-# 调用 Node.js 合并写入
-$result = node -e $nodeScript 2>&1
-if ($LASTEXITCODE -eq 0) {
+# 执行 Node.js 脚本
+$result = node $jsFile 2>&1
+$exitCode = $LASTEXITCODE
+
+# 清理临时文件
+Remove-Item $jsFile -ErrorAction SilentlyContinue
+Remove-Item $envFile -ErrorAction SilentlyContinue
+
+if ($exitCode -eq 0) {
     Write-Host $result -ForegroundColor Green
 } else {
     Write-Host "[ERROR] 写入配置失败: $result" -ForegroundColor Red
 }
-
-# 清理临时文件
-Remove-Item $envFile -ErrorAction SilentlyContinue
 
 Write-Host ""
 Write-Host "[OK] Unblind 已部署并配置完成" -ForegroundColor Green

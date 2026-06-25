@@ -41,7 +41,8 @@ if (Test-Path $SettingsFile) {
     Write-Host "-> 清理 settings.json 中的 UNBLIND 配置..." -ForegroundColor Yellow
 
     $settingsFwd = $SettingsFile -replace '\\', '/'
-    $nodeScript = @"
+    $jsFile = Join-Path $env:TEMP "unblind_uninstall.js"
+@"
 const fs = require('fs');
 const p = '$settingsFwd';
 let s = {};
@@ -74,10 +75,13 @@ if (changed) {
 } else {
   console.log('unchanged');
 }
-"@
+"@ | Set-Content $jsFile -Encoding UTF8
 
-    $result = node -e $nodeScript 2>&1
-    if ($LASTEXITCODE -eq 0) {
+    $result = node $jsFile 2>&1
+    $exitCode = $LASTEXITCODE
+    Remove-Item $jsFile -ErrorAction SilentlyContinue
+
+    if ($exitCode -eq 0) {
         if ($result -match "cleaned") {
             Write-Host "  [OK] 配置已清理" -ForegroundColor Green
         } else {
