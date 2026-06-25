@@ -1,4 +1,5 @@
-# Unblind — Windows 卸载脚本（PowerShell）
+﻿# Unblind — Windows 卸载脚本（PowerShell）
+# 使用 UTF-8 BOM 编码以兼容 Windows PowerShell 5.1
 param()
 
 $SkillName = "unblind"
@@ -7,40 +8,40 @@ $AgentsDir = Join-Path $env:USERPROFILE ".agents\skills\$SkillName"
 $SettingsFile = Join-Path $env:USERPROFILE ".claude\settings.json"
 $CacheDir = Join-Path $env:USERPROFILE ".claude\unblind\cache"
 
-Write-Host "🧹 Unblind — 卸载脚本" -ForegroundColor Cyan
+Write-Host "Unblind - 卸载脚本" -ForegroundColor Cyan
 Write-Host "================================"
 Write-Host ""
 
 # 1. 删除部署文件
-Write-Host "→ 删除已部署文件..." -ForegroundColor Yellow
+Write-Host "-> 删除已部署文件..." -ForegroundColor Yellow
 if (Test-Path $SkillDir) {
     Remove-Item $SkillDir -Recurse -Force
-    Write-Host "  ✓ 已删除 $SkillDir" -ForegroundColor Green
+    Write-Host "  [OK] 已删除 $SkillDir" -ForegroundColor Green
 } else {
-    Write-Host "  ⚠ 目录不存在，跳过: $SkillDir" -ForegroundColor Yellow
+    Write-Host "  [WARN] 目录不存在, 跳过: $SkillDir" -ForegroundColor Yellow
 }
 
 if (Test-Path $AgentsDir) {
     Remove-Item $AgentsDir -Recurse -Force
-    Write-Host "  ✓ 已删除 $AgentsDir" -ForegroundColor Green
+    Write-Host "  [OK] 已删除 $AgentsDir" -ForegroundColor Green
 } else {
-    Write-Host "  ⚠ 目录不存在，跳过: $AgentsDir" -ForegroundColor Yellow
+    Write-Host "  [WARN] 目录不存在, 跳过: $AgentsDir" -ForegroundColor Yellow
 }
 
 # 2. 清理缓存
 if (Test-Path $CacheDir) {
     Remove-Item $CacheDir -Recurse -Force
-    Write-Host "  ✓ 已删除缓存 $CacheDir" -ForegroundColor Green
+    Write-Host "  [OK] 已删除缓存 $CacheDir" -ForegroundColor Green
 }
 
 # 3. 清理 settings.json 中的配置
 if (Test-Path $SettingsFile) {
-    Write-Host "→ 清理 settings.json 中的 UNBLIND 配置..." -ForegroundColor Yellow
+    Write-Host "-> 清理 settings.json 中的 UNBLIND 配置..." -ForegroundColor Yellow
 
     try {
-        $settings = Get-Content $SettingsFile -Raw | ConvertFrom-Json -AsHashtable
+        $settings = Get-Content $SettingsFile -Raw -Encoding UTF8 | ConvertFrom-Json -AsHashtable
     } catch {
-        Write-Host "  ⚠ settings.json 解析失败，跳过" -ForegroundColor Yellow
+        Write-Host "  [WARN] settings.json 解析失败, 跳过" -ForegroundColor Yellow
         exit 0
     }
 
@@ -74,14 +75,14 @@ if (Test-Path $SettingsFile) {
 
     if ($changed) {
         $settings | ConvertTo-Json -Depth 10 | Set-Content $SettingsFile -Encoding UTF8
-        Write-Host "  ✓ 配置已清理" -ForegroundColor Green
+        Write-Host "  [OK] 配置已清理" -ForegroundColor Green
     } else {
-        Write-Host "  ⚠ 未发现 UNBLIND 相关配置" -ForegroundColor Yellow
+        Write-Host "  [WARN] 未发现 UNBLIND 相关配置" -ForegroundColor Yellow
     }
 } else {
-    Write-Host "  ⚠ settings.json 不存在，跳过配置清理" -ForegroundColor Yellow
+    Write-Host "  [WARN] settings.json 不存在, 跳过配置清理" -ForegroundColor Yellow
 }
 
 Write-Host ""
-Write-Host "✅ Unblind 已卸载" -ForegroundColor Green
-Write-Host "  如需要重新安装，运行 install.ps1 即可。"
+Write-Host "[OK] Unblind 已卸载" -ForegroundColor Green
+Write-Host "  如需要重新安装, 运行 install.ps1 即可。"

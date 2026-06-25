@@ -1,4 +1,5 @@
-# Unblind — Windows 一键安装脚本（PowerShell）
+﻿# Unblind — Windows 一键安装脚本（PowerShell）
+# 使用 UTF-8 BOM 编码以兼容 Windows PowerShell 5.1
 param()
 
 $ErrorActionPreference = "Stop"
@@ -10,7 +11,7 @@ $SettingsFile = Join-Path $env:USERPROFILE ".claude\settings.json"
 
 # 检测是否在仓库根目录
 if (-not (Test-Path ".\SKILL.md")) {
-    Write-Host "❌ 错误：未找到 SKILL.md。请在 unblind 仓库根目录运行此脚本。" -ForegroundColor Red
+    Write-Host "[ERROR] 错误: 未找到 SKILL.md。请在 unblind 仓库根目录运行此脚本。" -ForegroundColor Red
     exit 1
 }
 $SourceDir = (Get-Location).Path
@@ -39,26 +40,30 @@ function Deploy($dir) {
     Remove-Item "$dir\unblind.mjs" -ErrorAction SilentlyContinue
 }
 
-Write-Host "📸 Unblind — 部署中..." -ForegroundColor Cyan
+Write-Host "Unblind - 部署中..." -ForegroundColor Cyan
 Deploy $SkillDir
 Deploy $AgentsDir
 
 # Node.js 版本检查
+$nodeOk = $false
 try {
     $nodeVer = node --version
-    $major = [int]($nodeVer -replace '[v\..*]', '')
+    # node --version 输出: v18.15.0
+    $majorStr = ($nodeVer -replace '^v', '' -replace '\..*$', '')
+    $major = [int]$majorStr
     if ($major -ge 18) {
-        Write-Host "✅ Node.js $nodeVer" -ForegroundColor Green
+        Write-Host "[OK] Node.js $nodeVer" -ForegroundColor Green
+        $nodeOk = $true
     } else {
-        Write-Host "⚠️ Node.js $nodeVer < 18" -ForegroundColor Yellow
+        Write-Host "[WARN] Node.js $nodeVer (需要 >= 18)" -ForegroundColor Yellow
     }
 } catch {
-    Write-Host "❌ 未检测到 Node.js >= 18" -ForegroundColor Red
+    Write-Host "[ERROR] 未检测到 Node.js, 请安装 Node.js >= 18" -ForegroundColor Red
 }
 
 Write-Host ""
-Write-Host "⚙️  配置 OpenAI 兼容 API" -ForegroundColor Cyan
-Write-Host "按回车接受默认值，或输入自定义值。" -ForegroundColor Yellow
+Write-Host "配置 OpenAI 兼容 API" -ForegroundColor Cyan
+Write-Host "按回车接受默认值, 或输入自定义值。" -ForegroundColor Yellow
 Write-Host ""
 
 # 交互式输入 4 个环境变量
@@ -72,7 +77,7 @@ $inputKey = ""
 while ($true) {
     $inputKey = Read-Host "API Key (必填)"
     if (-not [string]::IsNullOrEmpty($inputKey)) { break }
-    Write-Host "API Key 不能为空，请重新输入" -ForegroundColor Red
+    Write-Host "API Key 不能为空, 请重新输入" -ForegroundColor Red
 }
 
 $inputOrder = Read-Host "Provider 顺序 [openai]"
@@ -80,13 +85,13 @@ if ([string]::IsNullOrEmpty($inputOrder)) { $inputOrder = "openai" }
 
 # 写入 settings.json
 Write-Host ""
-Write-Host "💾 写入配置到 $SettingsFile ..." -ForegroundColor Cyan
+Write-Host "写入配置到 $SettingsFile ..." -ForegroundColor Cyan
 
 # 读取现有 settings.json 并合并
 $settings = @{}
 if (Test-Path $SettingsFile) {
     try {
-        $settings = Get-Content $SettingsFile -Raw | ConvertFrom-Json -AsHashtable
+        $settings = Get-Content $SettingsFile -Raw -Encoding UTF8 | ConvertFrom-Json -AsHashtable
     } catch {
         $settings = @{}
     }
@@ -113,10 +118,10 @@ if (-not $hasPerm) {
 # 确保目录存在
 New-Item -ItemType Directory -Path (Split-Path $SettingsFile -Parent) -Force | Out-Null
 $settings | ConvertTo-Json -Depth 10 | Set-Content $SettingsFile -Encoding UTF8
-Write-Host "✅ 配置已写入" -ForegroundColor Green
+Write-Host "[OK] 配置已写入" -ForegroundColor Green
 
 Write-Host ""
-Write-Host "✅ Unblind 已部署并配置完成" -ForegroundColor Green
+Write-Host "[OK] Unblind 已部署并配置完成" -ForegroundColor Green
 Write-Host "  Skill:  $SkillDir"
 Write-Host "  Agents: $AgentsDir"
 Write-Host "  Config: $SettingsFile"
