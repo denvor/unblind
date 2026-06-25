@@ -4,6 +4,23 @@ param()
 
 $ErrorActionPreference = "Stop"
 
+# 兼容 PS5.1 / PS7 的 JSON 转 Hashtable 函数
+function ConvertFrom-JsonToHashtable {
+    param([string]$Json)
+    $obj = $Json | ConvertFrom-Json
+    return ConvertPSObjectToHashtable($obj)
+}
+function ConvertPSObjectToHashtable($obj) {
+    if ($null -eq $obj) { return $null }
+    if ($obj -is [array]) { return @($obj | ForEach-Object { ConvertPSObjectToHashtable $_ }) }
+    if ($obj -is [System.Management.Automation.PSCustomObject]) {
+        $ht = [ordered]@{}
+        $obj.PSObject.Properties | ForEach-Object { $ht[$_.Name] = ConvertPSObjectToHashtable $_.Value }
+        return $ht
+    }
+    return $obj
+}
+
 $SkillName = "unblind"
 $SkillDir = Join-Path $env:USERPROFILE ".claude\skills\$SkillName"
 $AgentsDir = Join-Path $env:USERPROFILE ".agents\skills\$SkillName"
@@ -91,8 +108,9 @@ Write-Host "写入配置到 $SettingsFile ..." -ForegroundColor Cyan
 $settings = @{}
 if (Test-Path $SettingsFile) {
     try {
-        $settings = Get-Content $SettingsFile -Raw -Encoding UTF8 | ConvertFrom-Json -AsHashtable
+        $settings = ConvertFrom-JsonToHashtable (Get-Content $SettingsFile -Raw -Encoding UTF8)
     } catch {
+        Write-Host "[WARN] settings.json 解析失败, 将创建新配置" -ForegroundColor Yellow
         $settings = @{}
     }
 }
