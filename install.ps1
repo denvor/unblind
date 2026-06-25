@@ -27,6 +27,8 @@ function Deploy($dir) {
 
     New-Item -ItemType Directory -Path "$dir\scripts\lib\providers" -Force | Out-Null
     Copy-Item "$SourceDir\scripts\unblind.mjs" "$dir\scripts\"
+    Copy-Item "$SourceDir\scripts\install-write.js" "$dir\scripts\"
+    Copy-Item "$SourceDir\scripts\uninstall-write.js" "$dir\scripts\"
     Copy-Item "$SourceDir\scripts\lib\*.js" "$dir\scripts\lib\"
     Copy-Item "$SourceDir\scripts\lib\providers\*.js" "$dir\scripts\lib\providers\"
 
@@ -85,63 +87,15 @@ while ($true) {
 $inputOrder = Read-Host "Provider 顺序 [openai]"
 if ([string]::IsNullOrEmpty($inputOrder)) { $inputOrder = "openai" }
 
-# 写入 settings.json — 使用 Node.js 处理 JSON（绕开 PS5.1 JSON 兼容性问题）
+# 写入 settings.json — 调用仓库中的脚本处理（绕开 PS5.1 JSON 兼容性）
 Write-Host ""
 Write-Host "写入配置到 $SettingsFile ..." -ForegroundColor Cyan
-
-# 把用户输入写入临时文件，Node.js 读取它来合并
-$envFile = Join-Path $env:TEMP "unblind_env.json"
-@"
-{
-  "UNBLIND_OPENAI_BASE_URL": "$inputUrl",
-  "UNBLIND_OPENAI_VISION_MODEL": "$inputModel",
-  "UNBLIND_OPENAI_API_KEY": "$inputKey",
-  "UNBLIND_PROVIDER_ORDER": "$inputOrder"
-}
-"@ | Set-Content $envFile -Encoding UTF8
 
 # 确保 settings.json 所在目录存在
 New-Item -ItemType Directory -Path (Split-Path $SettingsFile -Parent) -Force | Out-Null
 
-# 把路径里的 \ 转成 /，Node.js 在 Windows 上也识别
-$settingsFwd = $SettingsFile -replace '\\', '/'
-$envFwd = $envFile -replace '\\', '/'
-
-# 写 Node.js 脚本到临时文件（避免 -e 内联的转义问题）
-$jsFile = Join-Path $env:TEMP "unblind_merge.js"
-@"
-const fs = require('fs');
-
-// 读取用户输入
-const newEnv = JSON.parse(fs.readFileSync('$envFwd', 'utf8'));
-
-// 读取已有配置
-let s = {};
-try { s = JSON.parse(fs.readFileSync('$settingsFwd', 'utf8')); } catch {}
-
-// 合并 env
-if (!s.env) s.env = {};
-Object.assign(s.env, newEnv);
-
-// 添加 Bash 权限（如果不存在）
-const perm = 'Bash(*~/.claude/skills/unblind/scripts/unblind.mjs*)';
-if (!s.permissions) s.permissions = { allow: [] };
-if (!Array.isArray(s.permissions.allow)) s.permissions.allow = [];
-if (!s.permissions.allow.some(r => r.includes('unblind'))) {
-  s.permissions.allow.push(perm);
-}
-
-fs.writeFileSync('$settingsFwd', JSON.stringify(s, null, 2) + '\n');
-console.log('[OK] 配置已写入');
-"@ | Set-Content $jsFile -Encoding UTF8
-
-# 执行 Node.js 脚本
-$result = node $jsFile 2>&1
+$result = node "$SourceDir\scripts\install-write.js" "$SettingsFile" "$inputUrl" "$inputModel" "$inputKey" "$inputOrder" 2>&1
 $exitCode = $LASTEXITCODE
-
-# 清理临时文件
-Remove-Item $jsFile -ErrorAction SilentlyContinue
-Remove-Item $envFile -ErrorAction SilentlyContinue
 
 if ($exitCode -eq 0) {
     Write-Host $result -ForegroundColor Green
