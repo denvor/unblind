@@ -48,7 +48,7 @@ Unblind 是给 AI Agent 用的视觉后端——不是面向人类的 App，而�
 
 ```bash
 # 从仓库安装
-git clone <你的仓库地址> && cd unblind
+git clone https://github.com/denvor/unblind.git && cd unblind
 bash install.sh    # 交互式配置 4 个参数
 ```
 
@@ -66,7 +66,7 @@ bash install.sh    # 交互式配置 4 个参数
 **开发者**：
 
 ```bash
-git clone <你的仓库地址> && cd unblind
+git clone https://github.com/denvor/unblind.git && cd unblind
 node --test tests/test-*.js   # 零依赖
 ```
 
