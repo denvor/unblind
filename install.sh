@@ -24,8 +24,8 @@ deploy() {
   # 脚本（仅 lib 模块 + CLI 入口，不含 install.js、占位文件）
   mkdir -p "$dir/scripts/lib/providers"
   cp "$SOURCE_DIR/scripts/unblind.mjs" "$dir/scripts/"
-  cp "$SOURCE_DIR/scripts/install-write.js" "$dir/scripts/"
-  cp "$SOURCE_DIR/scripts/uninstall-write.js" "$dir/scripts/"
+  cp "$SOURCE_DIR/scripts/install-write.cjs" "$dir/scripts/"
+  cp "$SOURCE_DIR/scripts/uninstall-write.cjs" "$dir/scripts/"
   cp "$SOURCE_DIR/scripts/lib/"*.js "$dir/scripts/lib/"
   cp "$SOURCE_DIR/scripts/lib/providers/"*.js "$dir/scripts/lib/providers/"
 

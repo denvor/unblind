@@ -7,7 +7,7 @@
 用户需在终端运行（替换 YOUR_KEY）：
 
 ```bash
-node -e "const fs=require('fs');const os=require('os');const p=require('path').join(os.homedir(),'.claude','settings.json');const s=JSON.parse(fs.readFileSync(p,'utf8'));s.env.UNBLIND_OPENAI_API_KEY='YOUR_KEY';fs.writeFileSync(p,JSON.stringify(s,null,2)+'\n')"
+node -e "const fs=require('fs');const os=require('os');const p=require('path').join(os.homedir(),'.claude','settings.json');const s=JSON.parse(fs.readFileSync(p,'utf8').replace(/^﻿/,''));s.env.UNBLIND_OPENAI_API_KEY='YOUR_KEY';fs.writeFileSync(p,JSON.stringify(s,null,2)+'\n')"
 ```
 
 Key 类型：OpenAI 兼容 API 的 Bearer Token / API Key。
@@ -15,13 +15,13 @@ Key 类型：OpenAI 兼容 API 的 Bearer Token / API Key。
 ## Base URL 修复 (Phase 0.3)
 
 ```bash
-node -e "const fs=require('fs');const os=require('os');const p=require('path').join(os.homedir(),'.claude','settings.json');const s=JSON.parse(fs.readFileSync(p,'utf8'));const u='http://127.0.0.1:8080/v1';if(!s.env.UNBLIND_OPENAI_BASE_URL){s.env.UNBLIND_OPENAI_BASE_URL=u;fs.writeFileSync(p,JSON.stringify(s,null,2)+'\n')}"
+node -e "const fs=require('fs');const os=require('os');const p=require('path').join(os.homedir(),'.claude','settings.json');const s=JSON.parse(fs.readFileSync(p,'utf8').replace(/^﻿/,''));const u='http://127.0.0.1:8080/v1';if(!s.env.UNBLIND_OPENAI_BASE_URL){s.env.UNBLIND_OPENAI_BASE_URL=u;fs.writeFileSync(p,JSON.stringify(s,null,2)+'\n')}"
 ```
 
 ## 权限修复 (Phase 0.4)
 
 ```bash
-node -e "const fs=require('fs');const os=require('os');const p=require('path').join(os.homedir(),'.claude','settings.json');const s=JSON.parse(fs.readFileSync(p,'utf8'));if(!s.permissions)s.permissions={allow:[]};const a=s.permissions.allow;if(!a.some(x=>x.includes('unblind'))){a.push('Bash(*~/.claude/skills/unblind/scripts/unblind.mjs*)');fs.writeFileSync(p,JSON.stringify(s,null,2)+'\n')}"
+node -e "const fs=require('fs');const os=require('os');const p=require('path').join(os.homedir(),'.claude','settings.json');const s=JSON.parse(fs.readFileSync(p,'utf8').replace(/^﻿/,''));if(!s.permissions)s.permissions={allow:[]};const a=s.permissions.allow;if(!a.some(x=>x.includes('unblind'))){a.push('Bash(*~/.claude/skills/unblind/scripts/unblind.mjs*)');fs.writeFileSync(p,JSON.stringify(s,null,2)+'\n')}"
 ```
 
 ## 模型选择 (Phase 0.5)
@@ -29,7 +29,7 @@ node -e "const fs=require('fs');const os=require('os');const p=require('path').j
 询问用户要使用的视觉模型名，然后写入 settings.json：
 
 ```bash
-node -e "const fs=require('fs');const os=require('os');const p=require('path').join(os.homedir(),'.claude','settings.json');const s=JSON.parse(fs.readFileSync(p,'utf8'));s.env.UNBLIND_OPENAI_VISION_MODEL='gpt-4o';fs.writeFileSync(p,JSON.stringify(s,null,2)+'\n')"
+node -e "const fs=require('fs');const os=require('os');const p=require('path').join(os.homedir(),'.claude','settings.json');const s=JSON.parse(fs.readFileSync(p,'utf8').replace(/^﻿/,''));s.env.UNBLIND_OPENAI_VISION_MODEL='gpt-4o';fs.writeFileSync(p,JSON.stringify(s,null,2)+'\n')"
 ```
 
 替换 `gpt-4o` 为实际模型名。

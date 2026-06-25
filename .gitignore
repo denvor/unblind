@@ -2,6 +2,9 @@
 .claude/
 .agents/
 
+# 代码索引
+.codegraph/
+
 # 敏感配置
 settings.json
 .env

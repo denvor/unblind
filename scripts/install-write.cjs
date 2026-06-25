@@ -7,7 +7,7 @@ const fs = require('fs');
 const [, , settingsPath, baseUrl, model, apiKey, providerOrder] = process.argv;
 
 let s = {};
-try { s = JSON.parse(fs.readFileSync(settingsPath, 'utf8')); } catch {}
+try { s = JSON.parse(fs.readFileSync(settingsPath, 'utf8').replace(/^﻿/, '')); } catch {}
 
 // 合并 env
 if (!s.env) s.env = {};

@@ -46,7 +46,7 @@ User sends image → Unblind routes to OpenAI-compatible API → returns text.
 ### 0.1 Health check
 
 ```bash
-node -e "const fs=require('fs');const os=require('os');const p=require('path').join(os.homedir(),'.claude','settings.json');const s=JSON.parse(fs.readFileSync(p,'utf8'));const issues=[];if(!s.env?.UNBLIND_OPENAI_API_KEY) issues.push('KEY_MISSING');if(!s.env?.UNBLIND_OPENAI_VISION_MODEL) issues.push('MODEL_MISSING');const a=s.permissions?.allow||[];if(!a.some(x=>x.includes('unblind'))) issues.push('PERM_MISSING');if(issues.length) console.log(issues.join(' '));" 2>/dev/null
+node -e "const fs=require('fs');const os=require('os');const p=require('path').join(os.homedir(),'.claude','settings.json');const s=JSON.parse(fs.readFileSync(p,'utf8').replace(/^﻿/,''));const issues=[];if(!s.env?.UNBLIND_OPENAI_API_KEY) issues.push('KEY_MISSING');if(!s.env?.UNBLIND_OPENAI_VISION_MODEL) issues.push('MODEL_MISSING');const a=s.permissions?.allow||[];if(!a.some(x=>x.includes('unblind'))) issues.push('PERM_MISSING');if(issues.length) console.log(issues.join(' '));" 2>/dev/null
 ```
 
 - Empty → healthy, **skip to Phase 1**

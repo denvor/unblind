@@ -27,8 +27,8 @@ function Deploy($dir) {
 
     New-Item -ItemType Directory -Path "$dir\scripts\lib\providers" -Force | Out-Null
     Copy-Item "$SourceDir\scripts\unblind.mjs" "$dir\scripts\"
-    Copy-Item "$SourceDir\scripts\install-write.js" "$dir\scripts\"
-    Copy-Item "$SourceDir\scripts\uninstall-write.js" "$dir\scripts\"
+    Copy-Item "$SourceDir\scripts\install-write.cjs" "$dir\scripts\"
+    Copy-Item "$SourceDir\scripts\uninstall-write.cjs" "$dir\scripts\"
     Copy-Item "$SourceDir\scripts\lib\*.js" "$dir\scripts\lib\"
     Copy-Item "$SourceDir\scripts\lib\providers\*.js" "$dir\scripts\lib\providers\"
 
@@ -94,7 +94,7 @@ Write-Host "写入配置到 $SettingsFile ..." -ForegroundColor Cyan
 # 确保 settings.json 所在目录存在
 New-Item -ItemType Directory -Path (Split-Path $SettingsFile -Parent) -Force | Out-Null
 
-$result = node "$SourceDir\scripts\install-write.js" "$SettingsFile" "$inputUrl" "$inputModel" "$inputKey" "$inputOrder" 2>&1
+$result = node "$SourceDir\scripts\install-write.cjs" "$SettingsFile" "$inputUrl" "$inputModel" "$inputKey" "$inputOrder" 2>&1
 $exitCode = $LASTEXITCODE
 
 if ($exitCode -eq 0) {

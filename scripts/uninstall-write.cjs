@@ -7,7 +7,7 @@ const fs = require('fs');
 const [, , settingsPath] = process.argv;
 
 let s = {};
-try { s = JSON.parse(fs.readFileSync(settingsPath, 'utf8')); } catch { process.exit(0); }
+try { s = JSON.parse(fs.readFileSync(settingsPath, 'utf8').replace(/^﻿/, '')); } catch { process.exit(0); }
 
 const keys = [
   'UNBLIND_OPENAI_BASE_URL', 'UNBLIND_OPENAI_VISION_MODEL', 'UNBLIND_OPENAI_API_KEY',

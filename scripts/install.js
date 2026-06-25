@@ -72,7 +72,7 @@ function main() {
     console.log(`unblind.mjs: ${existsSync(SKILL_DIR + "/scripts/unblind.mjs") ? "✓" : "✗"}`);
     console.log(`settings.json: ${existsSync(SETTINGS_FILE) ? "✓" : "✗"}`);
     if (existsSync(SETTINGS_FILE)) {
-      const settings = JSON.parse(readFileSync(SETTINGS_FILE, "utf8"));
+      const settings = JSON.parse(readFileSync(SETTINGS_FILE, "utf8").replace(/^﻿/, ""));
       console.log(`UNBLIND_OPENAI_API_KEY: ${settings.env?.UNBLIND_OPENAI_API_KEY ? `✓ (${settings.env.UNBLIND_OPENAI_API_KEY.slice(0, 3)}...)` : "✗"}`);
       console.log(`UNBLIND_OPENAI_VISION_MODEL: ${settings.env?.UNBLIND_OPENAI_VISION_MODEL || "✗"}`);
     }

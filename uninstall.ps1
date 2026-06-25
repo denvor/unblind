@@ -12,11 +12,11 @@ Write-Host "Unblind - 卸载脚本" -ForegroundColor Cyan
 Write-Host "================================"
 Write-Host ""
 
-# 0. 找 uninstall-write.js（先清理配置，再删文件）
+# 0. 找 uninstall-write.cjs（先清理配置，再删文件）
 $writeScript = $null
 $possiblePaths = @(
-    "$SkillDir\scripts\uninstall-write.js"
-    ".\scripts\uninstall-write.js"
+    "$SkillDir\scripts\uninstall-write.cjs"
+    ".\scripts\uninstall-write.cjs"
 )
 foreach ($p in $possiblePaths) {
     if (Test-Path $p) { $writeScript = $p; break }
@@ -38,7 +38,7 @@ if ($writeScript -and (Test-Path $SettingsFile)) {
         Write-Host "  [WARN] settings.json 处理失败: $result" -ForegroundColor Yellow
     }
 } else {
-    Write-Host "  [WARN] 未找到 uninstall-write.js 或 settings.json 不存在, 跳过配置清理" -ForegroundColor Yellow
+    Write-Host "  [WARN] 未找到 uninstall-write.cjs 或 settings.json 不存在, 跳过配置清理" -ForegroundColor Yellow
 }
 
 # 2. 删除部署文件

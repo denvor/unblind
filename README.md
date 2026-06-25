@@ -63,6 +63,46 @@ bash install.sh    # 交互式配置 4 个参数
 
 配置写入 `~/.claude/settings.json`，后续调用自动读取。
 
+## 💬 在 Claude Code 中使用
+
+安装完成后，有 **三种方式** 在 Claude Code 中触发 Unblind：
+
+### 1. 斜杠命令（推荐）
+
+最稳定的方式，直接在对话中输入：
+
+```bash
+/unblind <图片路径> [模式]
+
+# 示例
+/unblind screenshot.png            # 默认 describe 模式
+/unblind photo.jpg describe        # 通用图片描述
+/unblind scan.png ocr              # 文字提取
+/unblind mockup.png ui-review      # UI/UX 评审
+/unblind chart.png chart-data      # 图表数据
+/unblind object.png object-detect  # 物体识别
+/unblind a.png b.png compare       # 多图对比
+```
+
+### 2. 自然语言触发
+
+发送图片或提及图片时自动识别：
+
+```
+看这张图 screenshot.png
+帮我分析这个截图
+提取这张图片的文字
+对比这两张图
+```
+
+### 3. 直接调用底层脚本
+
+绕过 skill 自动判断，直接运行：
+
+```bash
+node ~/.claude/skills/unblind/scripts/unblind.mjs <图片路径> [模式]
+```
+
 **开发者**：
 
 ```bash
@@ -85,14 +125,14 @@ node --test tests/test-*.js   # 零依赖
 
 ## 🔍 分析模式
 
-| 模式 | 用途 | 示例 |
-|------|------|------|
-| `describe` | 通用描述 | `unblind.mjs image.png` |
-| `ocr` | 文字提取 | `unblind.mjs scan.png ocr` |
-| `ui-review` | UI/UX 评审 | `unblind.mjs mockup.png ui-review` |
-| `chart-data` | 图表数据 | `unblind.mjs chart.png chart-data` |
-| `object-detect` | 物体识别 | `unblind.mjs photo.png object-detect` |
-| `compare` | 多图对比 | `unblind.mjs a.png b.png compare` |
+| 模式 | 用途 | 斜杠命令 | 直接脚本 |
+|------|------|----------|----------|
+| `describe` | 通用描述 | `/unblind image.png` | `unblind.mjs image.png` |
+| `ocr` | 文字提取 | `/unblind scan.png ocr` | `unblind.mjs scan.png ocr` |
+| `ui-review` | UI/UX 评审 | `/unblind mockup.png ui-review` | `unblind.mjs mockup.png ui-review` |
+| `chart-data` | 图表数据 | `/unblind chart.png chart-data` | `unblind.mjs chart.png chart-data` |
+| `object-detect` | 物体识别 | `/unblind photo.png object-detect` | `unblind.mjs photo.png object-detect` |
+| `compare` | 多图对比 | `/unblind a.png b.png compare` | `unblind.mjs a.png b.png compare` |
 
 ## 🎯 视觉模型
 
@@ -122,16 +162,18 @@ node --test tests/test-*.js   # 零依赖
 }
 ```
 
-## ⌨️ CLI
+## ⌨️ CLI / 脚本直接调用
+
+在 Claude Code 对话中也可以用 `!` 执行：
 
 ```bash
-unblind.mjs <image> [mode]           # 分析图片
-unblind.mjs <a.png> <b.png> compare  # 多图对比
-unblind.mjs <img> --format json      # 结构化输出
-unblind.mjs --health                 # 连通性诊断
-unblind.mjs --config                 # 查看配置
-unblind.mjs --cache-stats            # 缓存统计
-unblind.mjs --clear-cache            # 清空缓存
+!node ~/.claude/skills/unblind/scripts/unblind.mjs <image> [mode]           # 分析图片
+!node ~/.claude/skills/unblind/scripts/unblind.mjs <a.png> <b.png> compare  # 多图对比
+!node ~/.claude/skills/unblind/scripts/unblind.mjs <img> --format json      # 结构化输出
+!node ~/.claude/skills/unblind/scripts/unblind.mjs --health                 # 连通性诊断
+!node ~/.claude/skills/unblind/scripts/unblind.mjs --config                 # 查看配置
+!node ~/.claude/skills/unblind/scripts/unblind.mjs --cache-stats            # 缓存统计
+!node ~/.claude/skills/unblind/scripts/unblind.mjs --clear-cache            # 清空缓存
 ```
 
 ## 🏗️ 架构

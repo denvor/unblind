@@ -46,7 +46,7 @@ const MAX_SIZE_WARN_THRESHOLD = 20 * 1024 * 1024; // 20MB
 export function loadConfig() {
   let settings = {};
   try {
-    const raw = readFileSync(SETTINGS_FILE, "utf8");
+    const raw = readFileSync(SETTINGS_FILE, "utf8").replace(/^﻿/, "");
     settings = JSON.parse(raw);
   } catch {
     log("warn", "config", "settings_file_unreadable");
@@ -112,7 +112,7 @@ export function getSettingsPath() {
 export function saveConfig(updates) {
   let settings = {};
   try {
-    const raw = readFileSync(SETTINGS_FILE, "utf8");
+    const raw = readFileSync(SETTINGS_FILE, "utf8").replace(/^﻿/, "");
     settings = JSON.parse(raw);
   } catch {
     settings = {};
