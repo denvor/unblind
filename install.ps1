@@ -1,25 +1,10 @@
 ﻿# Unblind — Windows 一键安装脚本（PowerShell）
 # 使用 UTF-8 BOM 编码以兼容 Windows PowerShell 5.1
+#
+# JSON 写入使用 Node.js 处理（绕开 PS5.1 JSON 兼容性问题）
 param()
 
 $ErrorActionPreference = "Stop"
-
-# 兼容 PS5.1 / PS7 的 JSON 转 Hashtable 函数
-function ConvertFrom-JsonToHashtable {
-    param([string]$Json)
-    $obj = $Json | ConvertFrom-Json
-    return ConvertPSObjectToHashtable($obj)
-}
-function ConvertPSObjectToHashtable($obj) {
-    if ($null -eq $obj) { return $null }
-    if ($obj -is [array]) { return @($obj | ForEach-Object { ConvertPSObjectToHashtable $_ }) }
-    if ($obj -is [System.Management.Automation.PSCustomObject]) {
-        $ht = @{}
-        $obj.PSObject.Properties | ForEach-Object { $ht[$_.Name] = ConvertPSObjectToHashtable $_.Value }
-        return $ht
-    }
-    return $obj
-}
 
 $SkillName = "unblind"
 $SkillDir = Join-Path $env:USERPROFILE ".claude\skills\$SkillName"
@@ -100,43 +85,62 @@ while ($true) {
 $inputOrder = Read-Host "Provider 顺序 [openai]"
 if ([string]::IsNullOrEmpty($inputOrder)) { $inputOrder = "openai" }
 
-# 写入 settings.json
+# 写入 settings.json — 使用 Node.js 处理 JSON（绕开 PS5.1 JSON 兼容性问题）
 Write-Host ""
 Write-Host "写入配置到 $SettingsFile ..." -ForegroundColor Cyan
 
-# 读取现有 settings.json 并合并
-$settings = @{}
-if (Test-Path $SettingsFile) {
-    try {
-        $settings = ConvertFrom-JsonToHashtable (Get-Content $SettingsFile -Raw -Encoding UTF8)
-    } catch {
-        Write-Host "[WARN] settings.json 解析失败, 将创建新配置" -ForegroundColor Yellow
-        $settings = @{}
-    }
+# 把用户输入写入临时文件，Node.js 读取它来合并
+$envFile = Join-Path $env:TEMP "unblind_env.json"
+@"
+{
+  "UNBLIND_OPENAI_BASE_URL": "$inputUrl",
+  "UNBLIND_OPENAI_VISION_MODEL": "$inputModel",
+  "UNBLIND_OPENAI_API_KEY": "$inputKey",
+  "UNBLIND_PROVIDER_ORDER": "$inputOrder"
 }
+"@ | Set-Content $envFile -Encoding UTF8
 
-if (-not $settings.ContainsKey("env")) { $settings["env"] = @{} }
-$settings["env"]["UNBLIND_OPENAI_BASE_URL"] = $inputUrl
-$settings["env"]["UNBLIND_OPENAI_VISION_MODEL"] = $inputModel
-$settings["env"]["UNBLIND_OPENAI_API_KEY"] = $inputKey
-$settings["env"]["UNBLIND_PROVIDER_ORDER"] = $inputOrder
-
-# 添加 Bash 权限（如果不存在）
-$perm = 'Bash(*~/.claude/skills/unblind/scripts/unblind.mjs*)'
-if (-not $settings.ContainsKey("permissions")) { $settings["permissions"] = @{} }
-if (-not $settings["permissions"].ContainsKey("allow")) { $settings["permissions"]["allow"] = @() }
-$hasPerm = $false
-foreach ($r in $settings["permissions"]["allow"]) {
-    if ($r -match "unblind") { $hasPerm = $true; break }
-}
-if (-not $hasPerm) {
-    $settings["permissions"]["allow"] += $perm
-}
-
-# 确保目录存在
+# 确保 settings.json 所在目录存在
 New-Item -ItemType Directory -Path (Split-Path $SettingsFile -Parent) -Force | Out-Null
-$settings | ConvertTo-Json -Depth 10 | Set-Content $SettingsFile -Encoding UTF8
-Write-Host "[OK] 配置已写入" -ForegroundColor Green
+
+# 把路径里的 \ 转成 /，Node.js 在 Windows 上也能识别
+$settingsFwd = $SettingsFile -replace '\\', '/'
+$nodeScript = @"
+const fs = require('fs');
+
+// 读取用户输入
+const newEnv = JSON.parse(fs.readFileSync('$envFile', 'utf8'));
+
+// 读取已有配置
+let s = {};
+try { s = JSON.parse(fs.readFileSync('$settingsFwd', 'utf8')); } catch {}
+
+// 合并 env
+if (!s.env) s.env = {};
+Object.assign(s.env, newEnv);
+
+// 添加 Bash 权限（如果不存在）
+const perm = 'Bash(*~/.claude/skills/unblind/scripts/unblind.mjs*)';
+if (!s.permissions) s.permissions = { allow: [] };
+if (!Array.isArray(s.permissions.allow)) s.permissions.allow = [];
+if (!s.permissions.allow.some(r => r.includes('unblind'))) {
+  s.permissions.allow.push(perm);
+}
+
+fs.writeFileSync('$settingsFwd', JSON.stringify(s, null, 2) + '\n');
+console.log('[OK] 配置已写入');
+"@
+
+# 调用 Node.js 合并写入
+$result = node -e $nodeScript 2>&1
+if ($LASTEXITCODE -eq 0) {
+    Write-Host $result -ForegroundColor Green
+} else {
+    Write-Host "[ERROR] 写入配置失败: $result" -ForegroundColor Red
+}
+
+# 清理临时文件
+Remove-Item $envFile -ErrorAction SilentlyContinue
 
 Write-Host ""
 Write-Host "[OK] Unblind 已部署并配置完成" -ForegroundColor Green
