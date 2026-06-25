@@ -12,7 +12,7 @@ function ConvertPSObjectToHashtable($obj) {
     if ($null -eq $obj) { return $null }
     if ($obj -is [array]) { return @($obj | ForEach-Object { ConvertPSObjectToHashtable $_ }) }
     if ($obj -is [System.Management.Automation.PSCustomObject]) {
-        $ht = [ordered]@{}
+        $ht = @{}
         $obj.PSObject.Properties | ForEach-Object { $ht[$_.Name] = ConvertPSObjectToHashtable $_.Value }
         return $ht
     }
